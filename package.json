@@ -1,0 +1,36 @@
+{
+	"name": "tslint-secoya",
+	"version": "1.0.0",
+	"description": "Secoya's TSLint rules",
+	"main": "tslint.json",
+	"scripts": {
+		"build": "tslint -c tslint.json -p tsconfig.json && tsc -p tsconfig.json",
+		"prepublish": "tslint -c tslint.json -p tsconfig.json && tsc -p tsconfig.json",
+		"test": "tslint -c tslint.json -p tsconfig.json"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/secoya/tslint-secoya.git"
+	},
+	"keywords": [
+		"tslint",
+		"secoya"
+	],
+	"author": "Kaare Hoff Skovgaard <khs@secoya.dk>",
+	"license": "ISC",
+	"bugs": {
+		"url": "https://github.com/secoya/tslint-secoya/issues"
+	},
+	"homepage": "https://github.com/secoya/tslint-secoya#readme",
+	"devDependencies": {
+		"tslint": "5.1.0",
+		"typescript": "2.2.2"
+	},
+	"peerDependencies": {
+		"tslint": ">=5.0.0"
+	},
+	"dependencies": {
+		"tslint-microsoft-contrib": "4.0.1",
+		"tslint-react": "2.6.0"
+	}
+}
