@@ -106,6 +106,7 @@ module.exports = {
 				]
 			}
 		],
+		"jsx-attributes-ordering": true,
 		"jsx-no-lambda": true,
 		"jsx-alignment": true,
 		"jsx-boolean-value": true,

@@ -1,0 +1,53 @@
+function handler() {
+
+}
+
+<div
+  className="test"
+  onClick={handler}
+/>
+
+<div
+  onClick={handler}
+  className="test"
+  ~~~~~~~~~ [jsx-attributes-ordering1]
+/>
+
+
+<div
+  className="test"
+  onClick={handler}
+></div>
+
+<div
+  onClick={handler}
+  className="test"
+  ~~~~~~~~~ [jsx-attributes-ordering2]
+></div>
+
+[jsx-attributes-ordering1]: 'className' should come alphabetically before 'onClick'.
+[jsx-attributes-ordering2]: 'className' should come alphabetically before 'onClick'.
+
+
+// In combination with spreads
+
+<div
+	onClick={handler}
+	{...props}
+	className="test"
+/>
+<div
+	onClick={handler}
+	{...props}
+	className="test"
+></div>
+
+<div
+  onClick={handler}
+  {...props}
+  style={{cursor: 'pointer'}}
+  className="test"
+  ~~~~~~~~~ [jsx-attributes-ordering3]
+></div>
+
+[jsx-attributes-ordering3]: 'className' should come alphabetically before 'style'.
