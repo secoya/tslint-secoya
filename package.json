@@ -5,8 +5,8 @@
 	"main": "tslint.json",
 	"scripts": {
 		"build": "tslint -c tslint.json -p tsconfig.json && tsc -p tsconfig.json",
-		"prepublish": "tslint -c tslint.json -p tsconfig.json && tsc -p tsconfig.json",
-		"test": "tslint -c tslint.json -p tsconfig.json"
+		"prepublish": "tslint -c tslint.json -p tsconfig.json && tsc -p tsconfig.json && npm test",
+		"test": "find tests/rules -type d -exec ./node_modules/.bin/tslint --test {} \\;"
 	},
 	"repository": {
 		"type": "git",
