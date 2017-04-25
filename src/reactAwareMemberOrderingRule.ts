@@ -277,14 +277,20 @@ export class MemberOrderingWalker extends Lint.RuleWalker {
 	}
 
 	private lifecycleMethodToOrder(lifecycleMethodName: ReactLifecycleMethodName): number {
-		return this.opts.lifecycleOrderings.indexOf(lifecycleMethodName);
+		const idx = this.opts.lifecycleOrderings.indexOf(lifecycleMethodName);
+
+		if (idx < 0) {
+			throw new Error('Lifecycle method ' + lifecycleMethodName + ' not found');
+		}
+
+		return idx;
 	}
 
 	private lifecycleOrderLess(lhs: ReactLifecycleMethodName, rhs: ReactLifecycleMethodName): boolean {
 		const lhsOrder = this.lifecycleMethodToOrder(lhs);
 		const rhsOrder = this.lifecycleMethodToOrder(rhs);
 
-		if (lhs < rhs) {
+		if (lhsOrder < rhsOrder) {
 			return true;
 		}
 		return false;
