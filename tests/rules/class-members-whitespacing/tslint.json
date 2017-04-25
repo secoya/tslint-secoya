@@ -1,0 +1,8 @@
+{
+	"rulesDirectory": [
+		"../../../lib"
+	],
+	"rules": {
+		"class-members-whitespacing": true
+	}
+}

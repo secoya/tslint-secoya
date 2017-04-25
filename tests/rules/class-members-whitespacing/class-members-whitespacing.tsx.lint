@@ -1,0 +1,68 @@
+class PassFirstMemberLeadingWhitespace {
+  private myMember: string;
+}
+
+class PassFirstMemberLeadingWhitespaceWithComment {
+  /**
+   * Comment here
+   */
+  private myMember: string;
+}
+
+class FailFirstMemberLeadingWhitespace {
+
+  private myMember: string;
+  ~~~~~~~~~~~~~~~~~~~~~~~~~ [Expected no extranous leading new line]
+}
+
+class FailFirstMemberLeadingWhitespaceWithComment {
+
+  /**
+   * Some Comment
+   */
+  private myMember: string;
+  ~~~~~~~~~~~~~~~~~~~~~~~~~ [Expected no extranous leading new line]
+}
+
+class PassLastMemberTrailingWhitespace {
+  private myMember: string;
+}
+
+class FailLastMemberTrailingWhitespace {
+  private myMember: string;
+
+}
+~ [Expected no extranous leading new line]
+
+class PassMultipleFields {
+  private myMember: string;
+  private mySecondMember: string;
+
+  protected myNextMember: string;
+}
+
+class FailMultipleFields {
+  private myMember: string;
+
+  private mySecondMember: string;
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ [Expected a single leading new line]
+
+  protected myNextMember: string;
+
+
+  private static field: string;
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ [Expected two leading new lines]
+
+  public constructor() {
+
+  }
+  /**
+   * Comment
+   */
+  public method() { }
+  ~~~~~~~~~~~~~~~~~~~ [Expected two leading new lines]
+
+  public lambdaMethod = () => {
+
+  }
+}

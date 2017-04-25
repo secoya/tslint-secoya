@@ -1,0 +1,58 @@
+class PassFirstMemberLeadingWhitespace {
+  private myMember: string;
+}
+
+class PassFirstMemberLeadingWhitespaceWithComment {
+  /**
+   * Comment here
+   */
+  private myMember: string;
+}
+
+class FailFirstMemberLeadingWhitespace {
+  private myMember: string;
+}
+
+class FailFirstMemberLeadingWhitespaceWithComment {
+  /**
+   * Some Comment
+   */
+  private myMember: string;
+}
+
+class PassLastMemberTrailingWhitespace {
+  private myMember: string;
+}
+
+class FailLastMemberTrailingWhitespace {
+  private myMember: string;
+}
+
+class PassMultipleFields {
+  private myMember: string;
+  private mySecondMember: string;
+
+  protected myNextMember: string;
+}
+
+class FailMultipleFields {
+  private myMember: string;
+  private mySecondMember: string;
+
+  protected myNextMember: string;
+
+  private static field: string;
+
+  public constructor() {
+
+  }
+
+  /**
+   * Comment
+   */
+  public method() { }
+
+  public lambdaMethod = () => {
+
+  }
+}
