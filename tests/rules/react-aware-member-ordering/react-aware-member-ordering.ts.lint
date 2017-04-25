@@ -1,0 +1,120 @@
+class SuccessRankOrderingNonReact {
+	private static privateStaticField: string;
+
+	protected static protectedStaticField: string;
+
+	public static publicStaticField: string;
+
+	private static privateStaticMethod() {
+
+	}
+
+	protected static protectedStaticMethod() {
+
+	}
+
+	public static publicStaticMethod() {
+
+	}
+
+	public constructor() {
+
+	}
+
+	private privateInstanceMethod() {
+
+	}
+
+	protected protectedInstanceMethod() {
+
+	}
+
+	public publicInstanceMethod() {
+
+	}
+}
+
+class SuccessRankOrderingReact extends React.Component {
+	private static privateStaticField: string;
+
+	protected static protectedStaticField: string;
+
+	public static publicStaticField: string;
+
+	private static privateStaticMethod() {
+
+	}
+
+	protected static protectedStaticMethod() {
+
+	}
+
+	public static publicStaticMethod() {
+
+	}
+
+	public constructor() {
+
+	}
+
+	public componentWillMount() {
+
+	}
+
+	public componentDidMount() {
+
+	}
+
+	public componentWillReceiveProps() {
+
+	}
+
+	public shouldComponentUpdate() {
+
+	}
+
+	public componentWillUpdate() {
+
+	}
+
+	public componentDidUpdate() {
+
+	}
+
+	public componentWillUnmount() {
+
+	}
+
+	private privateInstanceMethod() {
+
+	}
+
+	protected protectedInstanceMethod() {
+
+	}
+
+	public publicInstanceMethod() {
+
+	}
+
+	public render() {
+
+	}
+}
+
+class FailRankOrderingNonReact {
+	protected static protectedStaticField: string;
+
+	private static privateStaticField: string;
+	~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ [Declaration of private static field not allowed after declaration of protected static field. Instead, this should come at the beginning of the class/interface.]
+}
+
+class FailRankOrderingNonReactWithLeadingComment {
+	protected static protectedStaticField: string;
+
+	/**
+	 * Some comment here
+	 */
+	private static privateStaticField: string;
+	~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ [Declaration of private static field not allowed after declaration of protected static field. Instead, this should come at the beginning of the class/interface.]
+}
