@@ -47,13 +47,79 @@ export class Rule extends Lint.Rules.AbstractRule {
 	}
 }
 
+function attributeNameComparator(a: ts.JsxAttribute, b: ts.JsxAttribute) {
+	const aName = getAttributeName(a);
+	const bName = getAttributeName(b);
+	// We assume they will never be equal, this might be a bad idea to assume though
+	return caseInsensitiveLess(aName, bName) ? -1 : 1;
+}
+
 // tslint:disable-next-line:max-classes-per-file
 export class JSXAttributesOrderingWalker extends Lint.RuleWalker {
 	constructor(sourceFile: ts.SourceFile, options: Lint.IOptions) {
 		super(sourceFile, options);
 	}
 
-	private visitAttributeList(nodes: ts.NodeArray<ts.JsxAttribute | ts.JsxSpreadAttribute>) {
+	private getFix(node: ts.JsxElement | ts.JsxSelfClosingElement): Lint.Fix {
+		if (node.kind === ts.SyntaxKind.JsxElement) {
+			return this.getJsxElementFix(node as ts.JsxElement);
+		}
+		return this.getJsxSelfClosingElementFix(node as ts.JsxSelfClosingElement);
+	}
+
+	private getJsxElementFix(node: ts.JsxElement): Lint.Fix {
+		const attributes = node.openingElement.attributes;
+		const sortedAttributes = this.getSortedAttributes(attributes);
+
+		const start = attributes.pos;
+		const width = attributes.end - start;
+		return new Lint.Replacement(
+			start,
+			width,
+			sortedAttributes,
+		);
+	}
+
+	private getJsxSelfClosingElementFix(node: ts.JsxSelfClosingElement): Lint.Fix {
+		const attributes = node.attributes;
+		const sortedAttributes = this.getSortedAttributes(attributes);
+
+		const start = attributes.pos;
+		const width = attributes.end - start;
+		return new Lint.Replacement(
+			start,
+			width,
+			sortedAttributes,
+		);
+	}
+
+	private getSortedAttributes(unsortedAttributes: ts.JsxAttributeLike[]): string {
+		const attributes: ts.JsxAttributeLike[] = [];
+		let groupAttributes: ts.JsxAttribute[] = [];
+		for (const attrib of unsortedAttributes) {
+			if (attrib.kind === ts.SyntaxKind.JsxSpreadAttribute) {
+				if (groupAttributes.length > 0) {
+					groupAttributes.sort(attributeNameComparator);
+					attributes.splice(attributes.length, 0, ...groupAttributes);
+					groupAttributes = [];
+				}
+				attributes.push(attrib);
+				continue;
+			}
+			groupAttributes.push(attrib);
+		}
+		if (groupAttributes.length > 0) {
+			groupAttributes.sort(attributeNameComparator);
+			attributes.splice(attributes.length, 0, ...groupAttributes);
+		}
+
+		return attributes.map(v => v.getFullText()).join('');
+	}
+
+	private visitAttributeList(
+		nodes: ts.NodeArray<ts.JsxAttribute | ts.JsxSpreadAttribute>,
+		containingNode: ts.JsxElement | ts.JsxSelfClosingElement,
+	) {
 		let groupAttributes: ts.JsxAttribute[] = [];
 
 		for (const node of nodes) {
@@ -83,6 +149,7 @@ export class JSXAttributesOrderingWalker extends Lint.RuleWalker {
 						),
 						attribName,
 					),
+					this.getFix(containingNode),
 				);
 			} else {
 				groupAttributes.push(attribNode);
@@ -91,12 +158,12 @@ export class JSXAttributesOrderingWalker extends Lint.RuleWalker {
 	}
 
 	protected visitJsxElement(node: ts.JsxElement): void {
-		this.visitAttributeList(node.openingElement.attributes);
+		this.visitAttributeList(node.openingElement.attributes, node);
 		super.visitJsxElement(node);
 	}
 
 	protected visitJsxSelfClosingElement(node: ts.JsxSelfClosingElement): void {
-		this.visitAttributeList(node.attributes);
+		this.visitAttributeList(node.attributes, node);
 		super.visitJsxSelfClosingElement(node);
 	}
 }

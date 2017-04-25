@@ -1,0 +1,118 @@
+class SuccessRankOrderingNonReact {
+	private static privateStaticField: string;
+
+	protected static protectedStaticField: string;
+
+	public static publicStaticField: string;
+
+	private static privateStaticMethod() {
+
+	}
+
+	protected static protectedStaticMethod() {
+
+	}
+
+	public static publicStaticMethod() {
+
+	}
+
+	public constructor() {
+
+	}
+
+	private privateInstanceMethod() {
+
+	}
+
+	protected protectedInstanceMethod() {
+
+	}
+
+	public publicInstanceMethod() {
+
+	}
+}
+
+class SuccessRankOrderingReact extends React.Component {
+	private static privateStaticField: string;
+
+	protected static protectedStaticField: string;
+
+	public static publicStaticField: string;
+
+	private static privateStaticMethod() {
+
+	}
+
+	protected static protectedStaticMethod() {
+
+	}
+
+	public static publicStaticMethod() {
+
+	}
+
+	public constructor() {
+
+	}
+
+	public componentWillMount() {
+
+	}
+
+	public componentDidMount() {
+
+	}
+
+	public componentWillReceiveProps() {
+
+	}
+
+	public shouldComponentUpdate() {
+
+	}
+
+	public componentWillUpdate() {
+
+	}
+
+	public componentDidUpdate() {
+
+	}
+
+	public componentWillUnmount() {
+
+	}
+
+	private privateInstanceMethod() {
+
+	}
+
+	protected protectedInstanceMethod() {
+
+	}
+
+	public publicInstanceMethod() {
+
+	}
+
+	public render() {
+
+	}
+}
+
+class FailRankOrderingNonReact {
+
+	private static privateStaticField: string;
+	protected static protectedStaticField: string;
+}
+
+class FailRankOrderingNonReactWithLeadingComment {
+
+	/**
+	 * Some comment here
+	 */
+	private static privateStaticField: string;
+	protected static protectedStaticField: string;
+}

@@ -317,9 +317,59 @@ export class MemberOrderingWalker extends Lint.RuleWalker {
 		return this.opts.order[rank].name;
 	}
 
-	private visitMembers(members: Member[]) {
+	private sortMembers(members: Member[], inReactClass: boolean): string {
+		// This shoves all unranked members to the bottom.
+		// It might not be ideal but we are not using that kind of stuff.
+		const cmp = (a: Member, b: Member): number => {
+			const aRank = this.memberRank(a, inReactClass);
+			const bRank = this.memberRank(b, inReactClass);
+
+			if (aRank.rank < bRank.rank) {
+				return -1;
+			} else if (bRank.rank < aRank.rank) {
+				return 1;
+			}
+
+			// Pray to god this is stable sort
+			if (!this.opts.alphabetize || a.name == null || b.name == null) {
+				return 0;
+			}
+
+			const aName = nameString(a.name);
+			const bName = nameString(b.name);
+			if (aRank.isLifecycleMethod) {
+				if (
+					this.lifecycleOrderLess(
+						aName as ReactLifecycleMethodName,
+						bName as ReactLifecycleMethodName,
+					)
+				) {
+					return -1;
+				}
+				return 1;
+			}
+
+			if (caseInsensitiveLess(aName, bName)) {
+				return -1;
+			}
+			return 1;
+		};
+
+		const sortedMembers = members.slice(0).sort(cmp);
+
+		return sortedMembers.map(v => v.getFullText()).join('');
+	}
+
+	private visitMembers(members: ts.NodeArray<Member>) {
 		let prevRank = -1;
 		let prevName: string | undefined;
+
+		const generateFix = () => {
+			const sortedMembers = this.sortMembers(members, this.inReactClass);
+			const start = members.pos;
+			const width = members.end - start;
+			return new Lint.Replacement(start, width, sortedMembers);
+		};
 		for (const member of members) {
 			const { rank, isLifecycleMethod } = this.memberRank(member, this.inReactClass);
 			if (rank === -1) {
@@ -335,7 +385,7 @@ export class MemberOrderingWalker extends Lint.RuleWalker {
 					: 'at the beginning of the class/interface';
 				const errorLine1 = `Declaration of ${nodeType} not allowed after declaration of ${prevNodeType}. ` +
 					`Instead, this should come ${locationHint}.`;
-				this.addFailureAtNode(member, errorLine1);
+				this.addFailureAtNode(member, errorLine1, generateFix());
 			} else {
 				if (this.opts.alphabetize && member.name) {
 					if (rank !== prevRank) {
@@ -348,8 +398,6 @@ export class MemberOrderingWalker extends Lint.RuleWalker {
 						if (prevName === undefined) {
 							prevName = curName;
 						} else {
-							const prevOrder = this.lifecycleMethodToOrder(prevName as ReactLifecycleMethodName);
-							const currentOrder = this.lifecycleMethodToOrder(curName as ReactLifecycleMethodName);
 							if (this.lifecycleOrderLess(curName as ReactLifecycleMethodName, prevName as ReactLifecycleMethodName)) {
 								this.addFailureAtNode(
 									member.name,
@@ -357,6 +405,7 @@ export class MemberOrderingWalker extends Lint.RuleWalker {
 										this.findLowerLicecycleName(members, rank, curName as ReactLifecycleMethodName),
 										curName,
 									),
+									generateFix(),
 								);
 							} else {
 								prevName = curName;
@@ -364,8 +413,11 @@ export class MemberOrderingWalker extends Lint.RuleWalker {
 						}
 					} else {
 						if (prevName !== undefined && caseInsensitiveLess(curName, prevName)) {
-							this.addFailureAtNode(member.name,
-								Rule.FAILURE_STRING_ALPHABETIZE(this.findLowerName(members, rank, curName), curName));
+							this.addFailureAtNode(
+								member.name,
+								Rule.FAILURE_STRING_ALPHABETIZE(this.findLowerName(members, rank, curName), curName),
+								generateFix(),
+							);
 						} else {
 							prevName = curName;
 						}
@@ -580,7 +632,7 @@ function categoryFromOption(orderOption: {}): MemberCategoryJson[] {
 
 function lifecycleOrderingsFromOption(opts: any): ReactLifecycleMethodName[] {
 	if (opts == null) {
-		return reactLifecycleMethods;
+		return reactLifecycleMethods.slice(0);
 	}
 	if (!Array.isArray(opts)) {
 		throw new Error(

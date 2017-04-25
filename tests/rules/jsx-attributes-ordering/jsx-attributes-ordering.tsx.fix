@@ -1,0 +1,45 @@
+function handler() {
+
+}
+
+<div
+  className="test"
+  onClick={handler}
+/>
+
+<div
+  // Some class name comment
+  className="test"
+  onClick={handler}
+/>
+
+
+<div
+  className="test"
+  onClick={handler}
+></div>
+
+<div
+  className="test"
+  onClick={handler}
+></div>
+
+// In combination with spreads
+
+<div
+	onClick={handler}
+	{...props}
+	className="test"
+/>
+<div
+	onClick={handler}
+	{...props}
+	className="test"
+></div>
+
+<div
+  onClick={handler}
+  {...props}
+  className="test"
+  style={{cursor: 'pointer'}}
+></div>
