@@ -195,7 +195,7 @@ export class Rule extends Lint.Rules.AbstractRule {
 	}
 
 	public static FAILURE_STRING_REACT_LIFE_CYCLE_METHOD_ORDER(prevName: string, curName: string) {
-		return `${curName} should come before ${prevName}.`;
+		return `React lifecycle method ${curName} should come before ${prevName}.`;
 	}
 
 	/* tslint:enable:object-literal-sort-keys */
