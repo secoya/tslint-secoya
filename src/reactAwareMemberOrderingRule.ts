@@ -572,6 +572,7 @@ type MemberCategoryJson = {
 // tslint:disable-next-line:max-classes-per-file
 class MemberCategory {
 	constructor(readonly name: string, private readonly kinds: Set<MemberKind>) { }
+
 	public has(kind: MemberKind) { return this.kinds.has(kind); }
 }
 

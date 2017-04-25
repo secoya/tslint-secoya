@@ -14,6 +14,8 @@ function handler() {
   ~~~~~~~~~ [jsx-attributes-ordering1]
 />
 
+<div onClick={handler} className="test" />
+                       ~~~~~~~~~ [jsx-attributes-ordering1]
 
 <div
   className="test"
@@ -29,7 +31,6 @@ function handler() {
 [jsx-attributes-ordering2]: 'className' should come alphabetically before 'onClick'.
 
 // In combination with spreads
-
 <div
 	onClick={handler}
 	{...props}

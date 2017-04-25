@@ -13,6 +13,7 @@ function handler() {
   onClick={handler}
 />
 
+<div className="test" onClick={handler} />
 
 <div
   className="test"
@@ -25,7 +26,6 @@ function handler() {
 ></div>
 
 // In combination with spreads
-
 <div
 	onClick={handler}
 	{...props}
