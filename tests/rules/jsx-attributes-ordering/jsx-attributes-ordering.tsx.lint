@@ -9,6 +9,7 @@ function handler() {
 
 <div
   onClick={handler}
+  // Some class name comment
   className="test"
   ~~~~~~~~~ [jsx-attributes-ordering1]
 />
@@ -24,10 +25,8 @@ function handler() {
   className="test"
   ~~~~~~~~~ [jsx-attributes-ordering2]
 ></div>
-
 [jsx-attributes-ordering1]: 'className' should come alphabetically before 'onClick'.
 [jsx-attributes-ordering2]: 'className' should come alphabetically before 'onClick'.
-
 
 // In combination with spreads
 
@@ -49,5 +48,4 @@ function handler() {
   className="test"
   ~~~~~~~~~ [jsx-attributes-ordering3]
 ></div>
-
 [jsx-attributes-ordering3]: 'className' should come alphabetically before 'style'.
