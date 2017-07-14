@@ -4,14 +4,14 @@ import * as Lint from 'tslint';
 import { flatMap, mapDefined } from 'tslint/lib/utils';
 
 const optionsDescription = Lint.Utils.dedent`
-    Enforces alphabetical ordering of JSX attributes`;
+	Enforces alphabetical ordering of JSX attributes`;
 
 export class Rule extends Lint.Rules.AbstractRule {
 	/* tslint:disable:object-literal-sort-keys */
 	public static metadata: Lint.IRuleMetadata = {
 		ruleName: 'jsx-attributes-ordering',
 		description: 'Enforces attribute ordering in jsx elements ',
-		rationale: 'Alphabetical ordering of attributes means that there\'s a predictable ordering',
+		rationale: "Alphabetical ordering of attributes means that there's a predictable ordering",
 		optionsDescription,
 		options: null,
 		type: 'maintainability',
@@ -57,11 +57,7 @@ export class JSXAttributesOrderingWalker extends Lint.RuleWalker {
 
 		const start = attributes.pos;
 		const width = attributes.end - start;
-		return new Lint.Replacement(
-			start,
-			width,
-			sortedAttributes,
-		);
+		return new Lint.Replacement(start, width, sortedAttributes);
 	}
 
 	private getJsxSelfClosingElementFix(node: ts.JsxSelfClosingElement): Lint.Fix {
@@ -70,17 +66,13 @@ export class JSXAttributesOrderingWalker extends Lint.RuleWalker {
 
 		const start = attributes.pos;
 		const width = attributes.end - start;
-		return new Lint.Replacement(
-			start,
-			width,
-			sortedAttributes,
-		);
+		return new Lint.Replacement(start, width, sortedAttributes);
 	}
 
-	private getSortedAttributes(unsortedAttributes: ts.JsxAttributeLike[]): string {
-		const attributes: ts.JsxAttributeLike[] = [];
-		let groupAttributes: ts.JsxAttribute[] = [];
-		for (const attrib of unsortedAttributes) {
+	private getSortedAttributes(unsortedAttributes: ts.JsxAttributes): string {
+		const attributes: (ts.JsxAttribute | ts.JsxSpreadAttribute)[] = [];
+		let groupAttributes: (ts.JsxAttribute | ts.JsxSpreadAttribute)[] = [];
+		for (const attrib of unsortedAttributes.properties) {
 			if (attrib.kind === ts.SyntaxKind.JsxSpreadAttribute) {
 				if (groupAttributes.length > 0) {
 					groupAttributes.sort(attributeNameComparator);
@@ -101,12 +93,12 @@ export class JSXAttributesOrderingWalker extends Lint.RuleWalker {
 	}
 
 	private visitAttributeList(
-		nodes: ts.NodeArray<ts.JsxAttribute | ts.JsxSpreadAttribute>,
+		nodes: ts.JsxAttributes,
 		containingNode: ts.JsxElement | ts.JsxSelfClosingElement,
 	) {
 		let groupAttributes: ts.JsxAttribute[] = [];
 
-		for (const node of nodes) {
+		for (const node of nodes.properties) {
 			// When doing spreads we need to reset the alphabetical ordering
 			if (node.kind === ts.SyntaxKind.JsxSpreadAttribute) {
 				groupAttributes = [];
@@ -126,13 +118,7 @@ export class JSXAttributesOrderingWalker extends Lint.RuleWalker {
 			if (caseInsensitiveLess(attribName, lastAttribName)) {
 				this.addFailureAtNode(
 					attribNode.name,
-					Rule.FAILURE_STRING_ALPHABETIZE(
-						findLowerName(
-							attribName,
-							groupAttributes,
-						),
-						attribName,
-					),
+					Rule.FAILURE_STRING_ALPHABETIZE(findLowerName(attribName, groupAttributes), attribName),
 					this.getFix(containingNode),
 				);
 			} else {
