@@ -77,7 +77,7 @@ module.exports = {
 		"no-empty-interface": false,
 		"object-literal-key-quotes": [
 			true,
-			"consistent-as-needed"
+			"as-needed"
 		],
 		"object-literal-shorthand": false,
 		"member-ordering": [
