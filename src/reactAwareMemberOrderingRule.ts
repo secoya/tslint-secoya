@@ -215,7 +215,11 @@ export class MemberOrderingWalker extends Lint.RuleWalker {
 	}
 
 	/** Finds the lowest lifecycle name higher than 'targetName'. */
-	private findLowerLicecycleName(members: Member[], targetRank: Rank, targetName: ReactLifecycleMethodName): string {
+	private findLowerLicecycleName(
+		members: ts.NodeArray<Member>,
+		targetRank: Rank,
+		targetName: ReactLifecycleMethodName,
+	): string {
 		for (const member of members) {
 			if (!member.name || this.memberRank(member, this.inReactClass).rank !== targetRank) {
 				continue;
@@ -229,7 +233,7 @@ export class MemberOrderingWalker extends Lint.RuleWalker {
 	}
 
 	/** Finds the lowest name higher than 'targetName'. */
-	private findLowerName(members: Member[], targetRank: Rank, targetName: string): string {
+	private findLowerName(members: ts.NodeArray<Member>, targetRank: Rank, targetName: string): string {
 		for (const member of members) {
 			if (!member.name || this.memberRank(member, this.inReactClass).rank !== targetRank) {
 				continue;
@@ -243,7 +247,7 @@ export class MemberOrderingWalker extends Lint.RuleWalker {
 	}
 
 	/** Finds the highest existing rank lower than `targetRank`. */
-	private findLowerRank(members: Member[], targetRank: Rank): Rank | -1 {
+	private findLowerRank(members: ts.NodeArray<Member>, targetRank: Rank): Rank | -1 {
 		let max: Rank | -1 = -1;
 		for (const member of members) {
 			const { rank } = this.memberRank(member, this.inReactClass);
@@ -317,7 +321,7 @@ export class MemberOrderingWalker extends Lint.RuleWalker {
 		return this.opts.order[rank].name;
 	}
 
-	private sortMembers(members: Member[], inReactClass: boolean): string {
+	private sortMembers(members: ts.NodeArray<Member>, inReactClass: boolean): string {
 		// This shoves all unranked members to the bottom.
 		// It might not be ideal but we are not using that kind of stuff.
 		const cmp = (a: Member, b: Member): number => {
