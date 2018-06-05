@@ -1,7 +1,5 @@
-import * as ts from 'typescript';
-
 import * as Lint from 'tslint';
-import { flatMap, mapDefined } from 'tslint/lib/utils';
+import * as ts from 'typescript';
 
 const optionsDescription = Lint.Utils.dedent`
     Enforces consistent formatting of class members. Namely
@@ -28,15 +26,12 @@ export class Rule extends Lint.Rules.AbstractRule {
 	}
 }
 
-// tslint:disable-next-line:max-classes-per-file
 export class WhitespacingWalker extends Lint.RuleWalker {
 	constructor(sourceFile: ts.SourceFile, options: Lint.IOptions) {
 		super(sourceFile, options);
 	}
 
-	private makeFixWithOneLeadingNewLines(
-		node: ts.Node,
-	): Lint.Replacement {
+	private makeFixWithOneLeadingNewLines(node: ts.Node): Lint.Replacement {
 		const trivia = leadingTriviaText(node);
 		const hasNewLines = substringCount(trivia, '\n');
 		if (!hasNewLines) {
@@ -46,9 +41,7 @@ export class WhitespacingWalker extends Lint.RuleWalker {
 		return Lint.Replacement.replaceFromTo(node.getFullStart(), node.getStart(), replacement);
 	}
 
-	private makeFixWithTwoLeadingNewLines(
-		node: ts.Node,
-	): Lint.Replacement {
+	private makeFixWithTwoLeadingNewLines(node: ts.Node): Lint.Replacement {
 		const trivia = leadingTriviaText(node);
 		const hasNewLines = substringCount(trivia, '\n');
 		if (!hasNewLines) {
@@ -57,16 +50,11 @@ export class WhitespacingWalker extends Lint.RuleWalker {
 		const replacementOneNewLine = replaceBlankLinesWith(node, '\n');
 		const firstNewLine = trivia.indexOf('\n');
 		const replacement =
-			replacementOneNewLine.substring(0, firstNewLine) +
-			'\n' +
-			replacementOneNewLine.substring(firstNewLine);
+			replacementOneNewLine.substring(0, firstNewLine) + '\n' + replacementOneNewLine.substring(firstNewLine);
 		return Lint.Replacement.replaceFromTo(node.getFullStart(), node.getStart(), replacement);
 	}
 
-	private visitClassMembers(
-		members: ts.NodeArray<ts.ClassElement>,
-		endClassToken: ts.Node,
-	) {
+	private visitClassMembers(members: ts.NodeArray<ts.ClassElement>, endClassToken: ts.Node) {
 		if (members.length === 0) {
 			return;
 		}
@@ -144,20 +132,21 @@ export class WhitespacingWalker extends Lint.RuleWalker {
 
 type Access = 'public' | 'protected' | 'private';
 type MemberKind =
-	'constructor' |
-	'private-static-field' |
-	'protected-static-field' |
-	'public-static-field' |
-	'static-method' |
-	'private-field' |
-	'protected-field' |
-	'public-field' |
-	'method'
-	;
+	| 'constructor'
+	| 'private-static-field'
+	| 'protected-static-field'
+	| 'public-static-field'
+	| 'static-method'
+	| 'private-field'
+	| 'protected-field'
+	| 'public-field'
+	| 'method';
 
 function getMemberKind(member: ts.ClassElement): MemberKind {
-	const accessLevel = hasModifier(ts.SyntaxKind.PrivateKeyword) ? 'private'
-		: hasModifier(ts.SyntaxKind.ProtectedKeyword) ? 'protected'
+	const accessLevel = hasModifier(ts.SyntaxKind.PrivateKeyword)
+		? 'private'
+		: hasModifier(ts.SyntaxKind.ProtectedKeyword)
+			? 'protected'
 			: 'public';
 
 	switch (member.kind) {
@@ -237,17 +226,13 @@ function hasAtLeastOneBlankLine(node: ts.Node): boolean {
 	return countBlankLines(node) >= 1;
 }
 
-function hasOneBlankLine(node: ts.Node): boolean {
-	return countBlankLines(node) === 1;
-}
-
 function hasNoBlankLines(node: ts.Node): boolean {
 	return countBlankLines(node) === 0;
 }
 
 function substringCount(str: string, subString: string): number {
 	if (subString.length <= 0) {
-		return (str.length + 1);
+		return str.length + 1;
 	}
 
 	let n = 0;

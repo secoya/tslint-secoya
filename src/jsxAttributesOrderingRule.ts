@@ -1,7 +1,5 @@
-import * as ts from 'typescript';
-
 import * as Lint from 'tslint';
-import { flatMap, mapDefined } from 'tslint/lib/utils';
+import * as ts from 'typescript';
 
 const optionsDescription = Lint.Utils.dedent`
 	Enforces alphabetical ordering of JSX attributes`;
@@ -38,7 +36,6 @@ function attributeNameComparator(a: ts.JsxAttribute, b: ts.JsxAttribute) {
 	return caseInsensitiveLess(aName, bName) ? -1 : 1;
 }
 
-// tslint:disable-next-line:max-classes-per-file
 export class JSXAttributesOrderingWalker extends Lint.RuleWalker {
 	constructor(sourceFile: ts.SourceFile, options: Lint.IOptions) {
 		super(sourceFile, options);
@@ -92,10 +89,7 @@ export class JSXAttributesOrderingWalker extends Lint.RuleWalker {
 		return attributes.map(v => v.getFullText()).join('');
 	}
 
-	private visitAttributeList(
-		nodes: ts.JsxAttributes,
-		containingNode: ts.JsxElement | ts.JsxSelfClosingElement,
-	) {
+	private visitAttributeList(nodes: ts.JsxAttributes, containingNode: ts.JsxElement | ts.JsxSelfClosingElement) {
 		let groupAttributes: ts.JsxAttribute[] = [];
 
 		for (const node of nodes.properties) {

@@ -1,5 +1,3 @@
 {
-	"extends": [
-		"./tslint.js"
-	]
+	"extends": ["./tslint.js"]
 }

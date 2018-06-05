@@ -15,12 +15,7 @@
 		"target": "es5",
 		"experimentalDecorators": true,
 		"baseUrl": ".",
-		"lib": [
-			"es5",
-			"es2015"
-		]
+		"lib": ["es5", "es2015"]
 	},
-	"include": [
-		"src/**/*.ts"
-	]
+	"include": ["src/**/*.ts"]
 }

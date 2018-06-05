@@ -14,10 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import * as ts from 'typescript';
-
 import * as Lint from 'tslint';
 import { flatMap, mapDefined } from 'tslint/lib/utils';
+import * as ts from 'typescript';
 
 const OPTION_ORDER = 'order';
 const OPTION_ALPHABETIZE = 'alphabetize';
@@ -44,67 +43,76 @@ enum MemberKind {
 }
 
 const PRESETS = new Map<string, MemberCategoryJson[]>([
-	['fields-first', [
-		'public-static-field',
-		'protected-static-field',
-		'private-static-field',
-		'public-instance-field',
-		'protected-instance-field',
-		'private-instance-field',
-		'constructor',
-		'react-lifecycle-method',
-		'public-static-method',
-		'protected-static-method',
-		'private-static-method',
-		'public-instance-method',
-		'protected-instance-method',
-		'private-instance-method',
-		'react-render-method',
-	]],
-	['instance-sandwich', [
-		'public-static-field',
-		'protected-static-field',
-		'private-static-field',
-		'public-instance-field',
-		'protected-instance-field',
-		'private-instance-field',
-		'constructor',
-		'react-lifecycle-method',
-		'public-instance-method',
-		'protected-instance-method',
-		'private-instance-method',
-		'react-render-method',
-		'public-static-method',
-		'protected-static-method',
-		'private-static-method',
-	]],
-	['statics-first', [
-		'public-static-field',
-		'public-static-method',
-		'protected-static-field',
-		'protected-static-method',
-		'private-static-field',
-		'private-static-method',
-		'public-instance-field',
-		'protected-instance-field',
-		'private-instance-field',
-		'constructor',
-		'react-lifecycle-method',
-		'public-instance-method',
-		'protected-instance-method',
-		'private-instance-method',
-		'react-render-method',
-	]],
+	[
+		'fields-first',
+		[
+			'public-static-field',
+			'protected-static-field',
+			'private-static-field',
+			'public-instance-field',
+			'protected-instance-field',
+			'private-instance-field',
+			'constructor',
+			'react-lifecycle-method',
+			'public-static-method',
+			'protected-static-method',
+			'private-static-method',
+			'public-instance-method',
+			'protected-instance-method',
+			'private-instance-method',
+			'react-render-method',
+		],
+	],
+	[
+		'instance-sandwich',
+		[
+			'public-static-field',
+			'protected-static-field',
+			'private-static-field',
+			'public-instance-field',
+			'protected-instance-field',
+			'private-instance-field',
+			'constructor',
+			'react-lifecycle-method',
+			'public-instance-method',
+			'protected-instance-method',
+			'private-instance-method',
+			'react-render-method',
+			'public-static-method',
+			'protected-static-method',
+			'private-static-method',
+		],
+	],
+	[
+		'statics-first',
+		[
+			'public-static-field',
+			'public-static-method',
+			'protected-static-field',
+			'protected-static-method',
+			'private-static-field',
+			'private-static-method',
+			'public-instance-field',
+			'protected-instance-field',
+			'private-instance-field',
+			'constructor',
+			'react-lifecycle-method',
+			'public-instance-method',
+			'protected-instance-method',
+			'private-instance-method',
+			'react-render-method',
+		],
+	],
 ]);
 const PRESET_NAMES = Array.from(PRESETS.keys());
 
-const allMemberKindNames = mapDefined(Object.keys(MemberKind), (key) => {
+const allMemberKindNames = mapDefined(Object.keys(MemberKind), key => {
 	const mk = (MemberKind as any)[key];
-	return typeof mk === 'number' ? MemberKind[mk].replace(/[A-Z]/g, (cap) => '-' + cap.toLowerCase()) : undefined;
+	return typeof mk === 'number' ? MemberKind[mk].replace(/[A-Z]/g, cap => '-' + cap.toLowerCase()) : undefined;
 });
 
 function namesMarkdown(names: string[]): string {
-	return names.map((name) => '* `' + name + '`').join('\n    ');
+	return names.map(name => '* `' + name + '`').join('\n    ');
 }
 
 const optionsDescription = Lint.Utils.dedent`
@@ -139,17 +147,20 @@ export class Rule extends Lint.Rules.AbstractRule {
 			type: 'object',
 			properties: {
 				order: {
-					oneOf: [{
-						type: 'string',
-						enum: PRESET_NAMES,
-					}, {
-						type: 'array',
-						items: {
+					oneOf: [
+						{
 							type: 'string',
-							enum: allMemberKindNames,
+							enum: PRESET_NAMES,
 						},
-						maxLength: 13,
-					}],
+						{
+							type: 'array',
+							items: {
+								type: 'string',
+								enum: allMemberKindNames,
+							},
+							maxLength: 13,
+						},
+					],
 				},
 			},
 			additionalProperties: false,
@@ -204,7 +215,6 @@ export class Rule extends Lint.Rules.AbstractRule {
 	}
 }
 
-// tslint:disable-next-line:max-classes-per-file
 export class MemberOrderingWalker extends Lint.RuleWalker {
 	private inReactClass: boolean = false;
 	private readonly opts: Options;
@@ -274,9 +284,8 @@ export class MemberOrderingWalker extends Lint.RuleWalker {
 			return false;
 		}
 
-		return (
-			/^(RelayComponent|Component|PureComponent|React.Component|React.PureComponent)($|<)/.
-				test(ancestor.getText(this.getSourceFile()))
+		return /^(RelayComponent|Component|PureComponent|React.Component|React.PureComponent)($|<)/.test(
+			ancestor.getText(this.getSourceFile()),
 		);
 	}
 
@@ -300,9 +309,12 @@ export class MemberOrderingWalker extends Lint.RuleWalker {
 		return false;
 	}
 
-	private memberRank(member: Member, inReactClass: boolean): {
-		isLifecycleMethod: boolean,
-		rank: Rank | -1,
+	private memberRank(
+		member: Member,
+		inReactClass: boolean,
+	): {
+		isLifecycleMethod: boolean;
+		rank: Rank | -1;
 	} {
 		const optionName = getMemberKind(member, inReactClass);
 		if (optionName === undefined) {
@@ -313,7 +325,7 @@ export class MemberOrderingWalker extends Lint.RuleWalker {
 		}
 		return {
 			isLifecycleMethod: optionName === MemberKind.reactLifecycleMethod,
-			rank: this.opts.order.findIndex((category) => category.has(optionName)),
+			rank: this.opts.order.findIndex(category => category.has(optionName)),
 		};
 	}
 
@@ -342,12 +354,7 @@ export class MemberOrderingWalker extends Lint.RuleWalker {
 			const aName = nameString(a.name);
 			const bName = nameString(b.name);
 			if (aRank.isLifecycleMethod) {
-				if (
-					this.lifecycleOrderLess(
-						aName as ReactLifecycleMethodName,
-						bName as ReactLifecycleMethodName,
-					)
-				) {
+				if (this.lifecycleOrderLess(aName as ReactLifecycleMethodName, bName as ReactLifecycleMethodName)) {
 					return -1;
 				}
 				return 1;
@@ -384,10 +391,10 @@ export class MemberOrderingWalker extends Lint.RuleWalker {
 				const nodeType = this.rankName(rank);
 				const prevNodeType = this.rankName(prevRank);
 				const lowerRank = this.findLowerRank(members, rank);
-				const locationHint = lowerRank !== -1
-					? `after ${this.rankName(lowerRank)}s`
-					: 'at the beginning of the class/interface';
-				const errorLine1 = `Declaration of ${nodeType} not allowed after declaration of ${prevNodeType}. ` +
+				const locationHint =
+					lowerRank !== -1 ? `after ${this.rankName(lowerRank)}s` : 'at the beginning of the class/interface';
+				const errorLine1 =
+					`Declaration of ${nodeType} not allowed after declaration of ${prevNodeType}. ` +
 					`Instead, this should come ${locationHint}.`;
 				this.addFailureAtNode(member, errorLine1, generateFix());
 			} else {
@@ -402,7 +409,12 @@ export class MemberOrderingWalker extends Lint.RuleWalker {
 						if (prevName === undefined) {
 							prevName = curName;
 						} else {
-							if (this.lifecycleOrderLess(curName as ReactLifecycleMethodName, prevName as ReactLifecycleMethodName)) {
+							if (
+								this.lifecycleOrderLess(
+									curName as ReactLifecycleMethodName,
+									prevName as ReactLifecycleMethodName,
+								)
+							) {
 								this.addFailureAtNode(
 									member.name,
 									Rule.FAILURE_STRING_REACT_LIFE_CYCLE_METHOD_ORDER(
@@ -506,13 +518,13 @@ function memberKindFromName(name: string): MemberKind[] {
 }
 
 type ReactLifecycleMethodName =
-	'componentWillMount' |
-	'componentDidMount' |
-	'componentWillReceiveProps' |
-	'shouldComponentUpdate' |
-	'componentWillUpdate' |
-	'componentDidUpdate' |
-	'componentWillUnmount';
+	| 'componentWillMount'
+	| 'componentDidMount'
+	| 'componentWillReceiveProps'
+	| 'shouldComponentUpdate'
+	| 'componentWillUpdate'
+	| 'componentDidUpdate'
+	| 'componentWillUnmount';
 
 const reactLifecycleMethods: ReactLifecycleMethodName[] = [
 	'componentWillMount',
@@ -525,10 +537,7 @@ const reactLifecycleMethods: ReactLifecycleMethodName[] = [
 ];
 function getMemberKind(member: Member, inReactClass: boolean): MemberKind | undefined {
 	if (inReactClass) {
-		if (
-			member.kind === ts.SyntaxKind.MethodDeclaration ||
-			member.kind === ts.SyntaxKind.MethodSignature
-		) {
+		if (member.kind === ts.SyntaxKind.MethodDeclaration || member.kind === ts.SyntaxKind.MethodSignature) {
 			const memberName = nameString((member as ts.MethodDeclaration | ts.MethodSignature).name);
 			if (memberName === 'render') {
 				return MemberKind.reactRenderMethod;
@@ -538,8 +547,10 @@ function getMemberKind(member: Member, inReactClass: boolean): MemberKind | unde
 			}
 		}
 	}
-	const accessLevel = hasModifier(ts.SyntaxKind.PrivateKeyword) ? 'private'
-		: hasModifier(ts.SyntaxKind.ProtectedKeyword) ? 'protected'
+	const accessLevel = hasModifier(ts.SyntaxKind.PrivateKeyword)
+		? 'private'
+		: hasModifier(ts.SyntaxKind.ProtectedKeyword)
+			? 'protected'
 			: 'public';
 
 	switch (member.kind) {
@@ -569,15 +580,19 @@ function getMemberKind(member: Member, inReactClass: boolean): MemberKind | unde
 	}
 }
 
-type MemberCategoryJson = {
-	kinds: string[];
-	name: string;
-} | string;
-// tslint:disable-next-line:max-classes-per-file
+type MemberCategoryJson =
+	| {
+			kinds: string[];
+			name: string;
+			// tslint:disable-next-line:indent
+	  }
+	| string;
 class MemberCategory {
-	constructor(readonly name: string, private readonly kinds: Set<MemberKind>) { }
+	constructor(readonly name: string, private readonly kinds: Set<MemberKind>) {}
 
-	public has(kind: MemberKind) { return this.kinds.has(kind); }
+	public has(kind: MemberKind) {
+		return this.kinds.has(kind);
+	}
 }
 
 type Member = ts.TypeElement | ts.ClassElement;
@@ -593,15 +608,20 @@ interface Options {
 
 function parseOptions(options: any[]): Options {
 	const { order: orderJson, alphabetize, lifecycleOrderings } = getOptionsJson(options);
-	const order = orderJson.map((cat) => typeof cat === 'string'
-		? new MemberCategory(cat.replace(/-/g, ' '), new Set(memberKindFromName(cat)))
-		: new MemberCategory(cat.name, new Set(flatMap(cat.kinds, memberKindFromName))));
+	const order = orderJson.map(
+		cat =>
+			typeof cat === 'string'
+				? new MemberCategory(cat.replace(/-/g, ' '), new Set(memberKindFromName(cat)))
+				: new MemberCategory(cat.name, new Set(flatMap(cat.kinds, memberKindFromName))),
+	);
 	return { order, alphabetize, lifecycleOrderings };
 }
-function getOptionsJson(allOptions: any[]): {
-	alphabetize: boolean,
-	lifecycleOrderings: ReactLifecycleMethodName[],
-	order: MemberCategoryJson[],
+function getOptionsJson(
+	allOptions: any[],
+): {
+	alphabetize: boolean;
+	lifecycleOrderings: ReactLifecycleMethodName[];
+	order: MemberCategoryJson[];
 } {
 	if (allOptions == null || allOptions.length === 0 || allOptions[0] == null) {
 		throw new Error('Got empty options');
@@ -645,7 +665,7 @@ function lifecycleOrderingsFromOption(opts: any): ReactLifecycleMethodName[] {
 		);
 	}
 
-	if (opts.find(v => typeof (v) !== 'string')) {
+	if (opts.find(v => typeof v !== 'string')) {
 		throw new Error(
 			`${OPTION_LIFECYCLEORDERINGS} must be an array consisting of values ${reactLifecycleMethods.join(', ')}`,
 		);
@@ -672,14 +692,14 @@ function lifecycleOrderingsFromOption(opts: any): ReactLifecycleMethodName[] {
 function convertFromOldStyleOptions(options: string[]): MemberCategoryJson[] {
 	let categories: NameAndKinds[] = [{ name: 'member', kinds: allMemberKindNames }];
 	if (hasOption('variables-before-functions')) {
-		categories = splitOldStyleOptions(categories, (kind) => kind.includes('field'), 'field', 'method');
+		categories = splitOldStyleOptions(categories, kind => kind.includes('field'), 'field', 'method');
 	}
 	if (hasOption('static-before-instance')) {
-		categories = splitOldStyleOptions(categories, (kind) => kind.includes('static'), 'static', 'instance');
+		categories = splitOldStyleOptions(categories, kind => kind.includes('static'), 'static', 'instance');
 	}
 	if (hasOption('public-before-private')) {
 		// 'protected' is considered public
-		categories = splitOldStyleOptions(categories, (kind) => !kind.includes('private'), 'public', 'private');
+		categories = splitOldStyleOptions(categories, kind => !kind.includes('private'), 'public', 'private');
 	}
 	return categories;
 
@@ -687,7 +707,10 @@ function convertFromOldStyleOptions(options: string[]): MemberCategoryJson[] {
 		return options.indexOf(x) !== -1;
 	}
 }
-interface NameAndKinds { kinds: string[]; name: string; }
+interface NameAndKinds {
+	kinds: string[];
+	name: string;
+}
 function splitOldStyleOptions(
 	categories: NameAndKinds[],
 	filter: (name: string) => boolean,
@@ -696,7 +719,8 @@ function splitOldStyleOptions(
 ): NameAndKinds[] {
 	const newCategories: NameAndKinds[] = [];
 	for (const cat of categories) {
-		const yes = []; const no = [];
+		const yes = [];
+		const no = [];
 		for (const kind of cat.kinds) {
 			if (filter(kind)) {
 				yes.push(kind);
