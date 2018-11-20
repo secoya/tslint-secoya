@@ -54,8 +54,8 @@ export class WhitespacingWalker extends Lint.RuleWalker {
 		return Lint.Replacement.replaceFromTo(node.getFullStart(), node.getStart(), replacement);
 	}
 
-	private visitClassMembers(members: ts.NodeArray<ts.ClassElement>, endClassToken: ts.Node) {
-		if (members.length === 0) {
+	private visitClassMembers(members: ts.NodeArray<ts.ClassElement>, endClassToken: ts.Node | undefined) {
+		if (members.length === 0 || endClassToken == null) {
 			return;
 		}
 
@@ -146,8 +146,8 @@ function getMemberKind(member: ts.ClassElement): MemberKind {
 	const accessLevel = hasModifier(ts.SyntaxKind.PrivateKeyword)
 		? 'private'
 		: hasModifier(ts.SyntaxKind.ProtectedKeyword)
-			? 'protected'
-			: 'public';
+		? 'protected'
+		: 'public';
 
 	switch (member.kind) {
 		case ts.SyntaxKind.Constructor:

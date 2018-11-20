@@ -1,6 +1,6 @@
 {
 	"name": "tslint-secoya",
-	"version": "2.0.1",
+	"version": "2.0.2",
 	"description": "Secoya's TSLint rules",
 	"main": "tslint.json",
 	"scripts": {
@@ -24,14 +24,14 @@
 	"homepage": "https://github.com/secoya/tslint-secoya#readme",
 	"devDependencies": {
 		"@types/node": "8.0.27",
-		"tslint": "5.10.0",
-		"typescript": "2.9.1"
+		"tslint": "5.11.0",
+		"typescript": "3.1.6"
 	},
 	"peerDependencies": {
 		"tslint": ">=5.0.0"
 	},
 	"dependencies": {
-		"tslint-microsoft-contrib": "5.0.3",
+		"tslint-microsoft-contrib": "5.2.1",
 		"tslint-react": "3.6.0"
 	}
 }
