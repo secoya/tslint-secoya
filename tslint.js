@@ -74,7 +74,6 @@ module.exports = {
 		'no-unnecessary-field-initialization': true,
 		'no-unnecessary-local-variable': true,
 		'no-unnecessary-override': true,
-		'no-unused-variable': true,
 		'no-with-statement': true,
 		'prefer-array-literal': true,
 		'promise-must-complete': true,
