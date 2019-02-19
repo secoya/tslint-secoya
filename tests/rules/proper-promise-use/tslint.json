@@ -1,0 +1,6 @@
+{
+	"rulesDirectory": ["../../../lib"],
+	"rules": {
+		"proper-promise-use": true
+	}
+}

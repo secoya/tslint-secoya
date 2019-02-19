@@ -1,0 +1,269 @@
+async function fn(): Promise<void> {
+	const prom = Promise.resolve(null);
+	      ~~~~                          [Promise "prom" must be handled.]
+}
+
+async function test(): Promise<void> {
+	const prom = Promise.resolve(null);
+
+	await prom;
+}
+
+async function test2(): Promise<void> {
+	const prom = Promise.resolve(null);
+
+	return prom;
+}
+
+async function test3(): Promise<void> {
+	let prom: Promise<void>;
+
+	prom = Promise.resolve(null);
+	~~~~                          [Promise "prom" must be handled.]
+}
+
+async function test4(): Promise<void> {
+	const prom = Promise.resolve(null);
+
+	if (true) {
+		await prom;
+		      ~~~~                   [Handling of "prom" is guarded by a condition. It must be handled unconditionally.]
+	}
+}
+
+async function test4Switch(): Promise<void> {
+	const prom = Promise.resolve(null);
+
+	switch (true) {
+		case true:
+			await prom;
+			      ~~~~                   [Handling of "prom" is guarded by a condition. It must be handled unconditionally.]
+	}
+}
+
+async function test4While(): Promise<void> {
+	const prom = Promise.resolve(null);
+
+	while (true) {
+		await prom;
+		      ~~~~                   [Handling of "prom" is guarded by a condition. It must be handled unconditionally.]
+	}
+}
+
+async function test4WhileGood(): Promise<void> {
+
+	while (true) {
+		const prom = Promise.resolve(null);
+		await prom;
+	}
+}
+
+async function test4ForIn(): Promise<void> {
+	const prom = Promise.resolve(null);
+
+	for (const x in [1]) {
+		await prom;
+		      ~~~~                   [Handling of "prom" is guarded by a condition. It must be handled unconditionally.]
+	}
+}
+
+async function test4ForOf(): Promise<void> {
+	const prom = Promise.resolve(null);
+
+	for (const x of [1]) {
+		await prom;
+		      ~~~~                   [Handling of "prom" is guarded by a condition. It must be handled unconditionally.]
+	}
+}
+
+async function test4For(): Promise<void> {
+	const prom = Promise.resolve(null);
+
+	for (const i = 0; i < 10; i++) {
+		await prom;
+		      ~~~~                   [Handling of "prom" is guarded by a condition. It must be handled unconditionally.]
+	}
+}
+
+async function test5(): Promise<void> {
+	let x = Promise.resolve(null);
+	let y = Promise.resolve(null);
+
+	await Promise.all([x, y]);
+}
+
+async function test6(): Promise<void> {
+	const prom = Promise.resolve(null);
+	const y = true;
+
+	y == false ? await prom : null;
+	                   ~~~~                      [Handling of "prom" is guarded by a condition. It must be handled unconditionally.]
+}
+
+async function test7(): Promise<void> {
+	const prom = Promise.resolve(null);
+
+	const y = false && await prom;
+	                         ~~~~                      [Handling of "prom" is guarded by a condition. It must be handled unconditionally.]
+}
+
+async function test8(): Promise<void> {
+	const prom = Promise.resolve(null);
+
+	const y = true || await prom;
+	                        ~~~~                [Handling of "prom" is guarded by a condition. It must be handled unconditionally.]
+}
+
+async function test8(): Promise<void> {
+	const prom = Promise.resolve(null);
+
+	const y = true || await Promise.all([prom]);
+	                                     ~~~~      [Handling of "prom" is guarded by a condition. It must be handled unconditionally.]
+}
+
+async function test8(): Promise<void> {
+	const y = true || await Promise.resolve(null);
+}
+
+async function test9(prom: Promise<void>): Promise<void> {}
+                     ~~~~                  [Promise "prom" must be handled.]
+
+
+async function test10(prom: Promise<void>): Promise<void> {
+	return prom;
+}
+
+async function test11(prom: Promise<void>): Promise<void> {
+	if (false) {
+		return prom;
+		       ~~~~                   [Handling of "prom" is guarded by a condition. It must be handled unconditionally.]
+	}
+	return;
+}
+
+async function test12(): Promise<void> {
+	const x = Promise.resolve(null);
+	await Promise.resolve(null);
+	~~~~~~~~~~~~~~~~~~~~~~~~~~~            [Existing promise "x" needs to be included in this await expression, eg. use `Promise.all`.]
+	await x;
+}
+
+async function test13(): Promise<void> {
+	const x = Promise.resolve(null);
+	const y = Promise.resolve(null);
+	await Promise.all([x, y]);
+}
+
+async function promiseArrayTest(): Promise<void> {
+	const promisesArrayTests: Promise<void>[] = [];
+	      ~~~~~~~~~~~~~~~~~~ [Promise "promisesArrayTests" must be handled.]
+
+	promisesArrayTests.push(Promise.resolve(null));
+}
+
+async function promiseArrayTest2(): Promise<void> {
+	const promisesArrayTests: Promise<void>[] = [];
+
+	promisesArrayTests.push(Promise.resolve(null));
+
+	return Promise.all(promisesArrayTests);
+}
+
+async function promiseArrayMapTest(els: number[]): Promise<void> {
+	const promiseArrays: Promise<void>[] = [];
+
+	els.forEach((el) => promiseArrays.push(Promise.resolve(el)));
+
+	return Promise.all(promiseArrays);
+}
+
+async function promiseArrayMapTest2(els: number[]): Promise<void> {
+	const promiseArrays: Promise<void>[] = [];
+
+	for (const el of els) {
+		promiseArrays.push(Promise.resolve(el));
+	}
+
+	return Promise.all(promiseArrays);
+}
+
+async function testConditionalReturn(): Promise<void> {
+	const promise = Promise.resolve();
+
+	if (false) {
+		return;
+		~~~~~~~            [Control flow exits - "promise" must be handled first.]
+	}
+
+	return promise;
+}
+
+async function testConditionalThrow(): Promise<void> {
+	const promise = Promise.resolve();
+
+	if (false) {
+		throw new Error('');
+		~~~~~~~~~~~~~~~~~~~~        [Control flow exits - "promise" must be handled first.]
+	}
+
+	return promise;
+}
+
+async function testFirstClassfunctions1(): Promise<void> {
+	const promise = Promise.resolve(null);
+
+	const fn = function(prom: Promise<void>): Promise<void> {
+		await prom;
+	};
+
+	return fn(promise);
+}
+
+async function testFirstClassfunctions2(): Promise<void> {
+	const promise = Promise.resolve(null);
+
+	async function fn(prom: Promise<void>): Promise<void> {
+		await prom;
+	};
+
+	return fn(promise);
+}
+
+
+async function testFirstClassfunctions3(): Promise<void> {
+	const promise = Promise.resolve(null);
+
+	const fn = async (prom: Promise<void>): Promise<void> => {
+		await prom;
+	};
+
+	return fn(promise);
+}
+
+async function testFirstClassfunctions4(): Promise<void> {
+	const promise = Promise.resolve(null);
+
+	const fn = async (): Promise<void> => {
+		await promise;
+		      ~~~~~~~     [Use of closure scoped promise "promise" is not allowed.]
+	};
+
+	return fn();
+}
+
+
+// some tests added from orbit code base
+async function orbitFn1(values: number[]): Promise<void> {
+	const promises: Promise<void>[] = [];
+
+	for (const val of values) {
+		promises.push((async () => [val, await Promise.resolve(val)])());
+	}
+
+	if (promises.length === 0) {
+		return;
+		~~~~~~~    [Control flow exits - "promises" must be handled first.]
+	}
+
+	await Promise.all(promises);
+}
