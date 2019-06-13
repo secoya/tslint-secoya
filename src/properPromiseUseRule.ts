@@ -33,6 +33,17 @@ export class Rule extends Lint.Rules.TypedRule {
 	public static FAILURE_STRING_MISSING_AWAIT = (promiseExpr: ts.Node) =>
 		`Promise "${promiseExpr.getText()}" must be handled.`;
 
+	public static FAILURE_STRING_RETURN_OUT_OF_TRY_CATCH_BLOCK = (promiseExpr: ts.Node, failingBlock: ts.Block) => {
+		const promiseText = promiseExpr.getText();
+		const sourceFile = failingBlock.getSourceFile();
+		const startingLine = sourceFile.getLineAndCharacterOfPosition(failingBlock.getStart()).line + 1;
+		const endingLine = sourceFile.getLineAndCharacterOfPosition(failingBlock.getEnd()).line + 1;
+		return (
+			`Promise "${promiseText}" being directly returned here prevents the block ` +
+			`at line ${startingLine}-${endingLine} to track completion of the promise.`
+		);
+	};
+
 	public applyWithProgram(sourceFile: ts.SourceFile, program: ts.Program): Lint.RuleFailure[] {
 		return this.applyWithWalker(
 			new ProperPromiseUse(
@@ -45,8 +56,15 @@ export class Rule extends Lint.Rules.TypedRule {
 }
 
 interface Scope {
+	functionDecl?: ts.FunctionLikeDeclaration;
 	promises: Map<string, { blockLevel: number; declNode: ts.Identifier }>;
 	scopeBlockLevel: number;
+}
+
+const enum TryVisitState {
+	Try,
+	Catch,
+	Finally,
 }
 
 export class ProperPromiseUse extends Lint.RuleWalker {
@@ -54,6 +72,7 @@ export class ProperPromiseUse extends Lint.RuleWalker {
 	private blockLevel: number = 0;
 	private readonly conditions: { errorInConditionals: boolean; node: ts.Node; scopeBlockLevel: number }[] = [];
 	private readonly scopes: Scope[] = [{ scopeBlockLevel: 0, promises: new Map() }];
+	private readonly tryCatchBlocks: { state: TryVisitState; tryStatement: ts.TryStatement }[] = [];
 	private readonly typeChecker: ts.TypeChecker;
 
 	public constructor(sourceFile: ts.SourceFile, options: Lint.IOptions, program: ts.Program) {
@@ -67,6 +86,26 @@ export class ProperPromiseUse extends Lint.RuleWalker {
 			blockLevel: this.blockLevel,
 			declNode: id,
 		});
+	}
+
+	private blockPreventingSafeReturn(): ts.Block | null {
+		// If not in an async scope, there's little we can do
+		// in order to fixup on try statements;
+		if (!this.isInAsyncScope()) {
+			return null;
+		}
+		for (const tryCatchBlock of this.tryCatchBlocks) {
+			const catchClause = tryCatchBlock.tryStatement.catchClause;
+			const finallyBlock = tryCatchBlock.tryStatement.finallyBlock;
+
+			if (finallyBlock != null && tryCatchBlock.state !== TryVisitState.Finally) {
+				return finallyBlock;
+			}
+			if (catchClause != null && tryCatchBlock.state === TryVisitState.Try) {
+				return catchClause.block;
+			}
+		}
+		return null;
 	}
 
 	private currentScope(): Scope['promises'] {
@@ -85,9 +124,10 @@ export class ProperPromiseUse extends Lint.RuleWalker {
 		this.conditions.push({ scopeBlockLevel: this.blockLevel, node: condition, errorInConditionals: false });
 	}
 
-	private enterScope(): void {
+	private enterScope(functionDecl?: ts.FunctionLikeDeclaration): void {
 		this.blockLevel++;
 		this.scopes.push({
+			functionDecl: functionDecl,
 			promises: new Map(),
 			scopeBlockLevel: this.blockLevel,
 		});
@@ -178,6 +218,19 @@ export class ProperPromiseUse extends Lint.RuleWalker {
 		);
 	}
 
+	private isInAsyncScope(): boolean {
+		for (let i = this.scopes.length - 1; i >= 0; i--) {
+			const scope = this.scopes[i];
+			if (scope.functionDecl != null) {
+				return (
+					scope.functionDecl.modifiers != null &&
+					scope.functionDecl.modifiers.some(x => x.kind === ts.SyntaxKind.AsyncKeyword)
+				);
+			}
+		}
+		return false;
+	}
+
 	public getCondition(promiseVar: string): ts.Node {
 		if (!this.isConditioned(promiseVar)) {
 			throw new Error('Invalid request');
@@ -186,7 +239,7 @@ export class ProperPromiseUse extends Lint.RuleWalker {
 	}
 
 	public visitArrowFunction(arrowFunc: ts.ArrowFunction): void {
-		this.enterScope();
+		this.enterScope(arrowFunc);
 		super.visitArrowFunction(arrowFunc);
 		this.exitScope();
 	}
@@ -258,6 +311,12 @@ export class ProperPromiseUse extends Lint.RuleWalker {
 		this.visitNode(condExp.whenTrue);
 		this.visitNode(condExp.whenFalse);
 		this.exitCondition();
+	}
+
+	public visitConstructorDeclaration(constructorDecl: ts.ConstructorDeclaration): void {
+		this.enterScope(constructorDecl);
+		super.visitConstructorDeclaration(constructorDecl);
+		this.exitScope();
 	}
 
 	public visitDoStatement(doStatement: ts.DoStatement): void {
@@ -367,6 +426,12 @@ export class ProperPromiseUse extends Lint.RuleWalker {
 		this.exitCondition();
 	}
 
+	public visitMethodDeclaration(methodDecl: ts.MethodDeclaration): void {
+		this.enterScope(methodDecl);
+		super.visitMethodDeclaration(methodDecl);
+		this.exitScope();
+	}
+
 	public visitNode(node: ts.Node): void {
 		if (ts.isAwaitExpression(node)) {
 			return this.visitAwaitExpression(node);
@@ -390,7 +455,28 @@ export class ProperPromiseUse extends Lint.RuleWalker {
 		this.enterAwaitLikeExpression();
 		super.visitReturnStatement(returnStmt);
 		this.exitAwaitLikeExpression();
+		// Now - our most important exception is that we're not allowed to return a promise if we're inside
+		// a try/catch statement. This will prevent catch blocks from catching the exception
+		// as well as finally blocks will run before the returned promise has completed
+		if (returnStmt.expression != null) {
+			const getBlockPreventingSafeReturn = this.blockPreventingSafeReturn();
+			if (getBlockPreventingSafeReturn != null && isNodePromiseType(returnStmt.expression, this.typeChecker)) {
+				this.addFailureAtNode(
+					returnStmt,
+					Rule.FAILURE_STRING_RETURN_OUT_OF_TRY_CATCH_BLOCK(
+						returnStmt.expression,
+						getBlockPreventingSafeReturn,
+					),
+				);
+			}
+		}
 		this.failCurrentScope(returnStmt, Rule.FAILURE_STRING_CONTROL_EXITS);
+	}
+
+	public visitSetAccessor(setAccessor: ts.SetAccessorDeclaration): void {
+		this.enterScope(setAccessor);
+		super.visitSetAccessor(setAccessor);
+		this.exitScope();
 	}
 
 	public visitSwitchStatement(switchStmt: ts.SwitchStatement): void {
@@ -405,6 +491,21 @@ export class ProperPromiseUse extends Lint.RuleWalker {
 	public visitThrowStatement(throwStmt: ts.ThrowStatement): void {
 		super.visitThrowStatement(throwStmt);
 		this.failCurrentScope(throwStmt, Rule.FAILURE_STRING_CONTROL_EXITS);
+	}
+
+	public visitTryStatement(tryStmt: ts.TryStatement): void {
+		const tryCatchBlocks = { tryStatement: tryStmt, state: TryVisitState.Try };
+		this.tryCatchBlocks.push(tryCatchBlocks);
+		this.visitNode(tryStmt.tryBlock);
+		if (tryStmt.catchClause != null) {
+			tryCatchBlocks.state = TryVisitState.Catch;
+			this.visitNode(tryStmt.catchClause);
+		}
+		if (tryStmt.finallyBlock != null) {
+			tryCatchBlocks.state = TryVisitState.Finally;
+			this.visitNode(tryStmt.finallyBlock);
+		}
+		this.tryCatchBlocks.pop();
 	}
 
 	public visitVariableDeclaration(decl: ts.VariableDeclaration): void {

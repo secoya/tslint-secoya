@@ -305,7 +305,53 @@ async function conditionStatements(): Promise<boolean> {
 	return false;
 }
 
+async function mustNotDirectReturnPromisesInsideTryBlocks(): Promise<void> {
+	try {
+		return fn();
+		~~~~~~~~~~~~ [Promise "fn()" being directly returned here prevents the block at line 285-287 to track completion of the promise.]
+	} catch (e) {
+		throw e;
+	}
+}
 
+async function mayDirectReturnPromisesInsideCatchBlocksWithoutFinally(): Promise<void> {
+	try {
+		await fn();
+	} catch (e) {
+		return fn();
+	}
+}
+
+async function mustNotDirectReturnPromisesInsideCatchBlocksWithoutFinally(): Promise<void> {
+	try {
+		await fn();
+	} catch (e) {
+		return fn();
+		~~~~~~~~~~~~ [Promise "fn()" being directly returned here prevents the block at line 303-305 to track completion of the promise.]
+	} finally {
+		await fn();
+	}
+}
+
+async function mustNotDirectReturnPromisesInsideCatchBlocksWithoutFinallyWithNestedTryBlocks(): Promise<void> {
+	try {
+		try {
+			await fn();
+		} catch (e) {
+			return fn();
+			~~~~~~~~~~~~ [Promise "fn()" being directly returned here prevents the block at line 315-317 to track completion of the promise.]
+		}
+	} catch (e) {
+
+	}
+}
+
+function doesNotCareAboutTryBlocksOutsideAsyncFunctions(): Promise<void> {
+	try {
+		return fn();
+	} catch (e) {
+	}
+}
 
 // some tests added from orbit code base
 async function orbitFn1(values: number[]): Promise<void> {
