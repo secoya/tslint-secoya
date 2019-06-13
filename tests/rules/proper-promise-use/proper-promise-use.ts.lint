@@ -251,6 +251,61 @@ async function testFirstClassfunctions4(): Promise<void> {
 	return fn();
 }
 
+// conditionals
+async function conditionalLogicalAnd1(): Promise<boolean> {
+	let somePromise: () => Promise<boolean>;
+	let val1: boolean;
+	let val2: boolean | null;
+	return somePromise() && val1 && val2 != null;
+	       ~~~~~~~~~~~~~ [Promise "somePromise()" must be handled.]
+}
+
+async function conditionalLogicalAnd2(): Promise<boolean> {
+	let somePromise: () => Promise<boolean>;
+	let val1: boolean;
+	let val2: boolean | null;
+	return val1 && somePromise() && val2 != null;
+	       ~~~~~~~~~~~~~~~~~~~~~ [Promise "val1 && somePromise()" must be handled.]
+}
+
+async function conditionalLogicalAnd3(): Promise<boolean> {
+	let somePromise: () => Promise<boolean>;
+	let val1: boolean;
+	let val2: boolean | null;
+	return val1 && val2 != null && somePromise();
+}
+
+async function conditionStatements(): Promise<boolean> {
+	let somePromise: () => Promise<boolean>;
+
+	if (somePromise()) {
+	    ~~~~~~~~~~~~~ [Promise "somePromise()" must be handled.]
+		return true;
+	}
+
+	while (somePromise()) {
+	       ~~~~~~~~~~~~~ [Promise "somePromise()" must be handled.]
+		return true;
+	}
+
+	for (const v of somePromise()) {
+	                ~~~~~~~~~~~~~ [Promise "somePromise()" must be handled.]
+		return true;
+	}
+
+	for (const v in somePromise()) {
+	                ~~~~~~~~~~~~~ [Promise "somePromise()" must be handled.]
+		return true;
+	}
+
+	do {
+		return true;
+	} while (somePromise());
+	         ~~~~~~~~~~~~~ [Promise "somePromise()" must be handled.]
+	return false;
+}
+
+
 
 // some tests added from orbit code base
 async function orbitFn1(values: number[]): Promise<void> {

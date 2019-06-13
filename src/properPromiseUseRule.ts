@@ -30,7 +30,7 @@ export class Rule extends Lint.Rules.TypedRule {
 		`Control flow exits - "${promiseId.getText()}" must be handled first.`;
 	public static FAILURE_STRING_DEPENDS_ON_OTHER_AWAIT = (promiseId: ts.Identifier) =>
 		`Existing promise "${promiseId.getText()}" needs to be included in this await expression, eg. use \`Promise.all\`.`;
-	public static FAILURE_STRING_MISSING_AWAIT = (promiseVar: ts.Identifier) =>
+	public static FAILURE_STRING_MISSING_AWAIT = (promiseVar: ts.Node) =>
 		`Promise "${promiseVar.getText()}" must be handled.`;
 
 	public applyWithProgram(sourceFile: ts.SourceFile, program: ts.Program): Lint.RuleFailure[] {
@@ -83,6 +83,9 @@ export class ProperPromiseUse extends Lint.RuleWalker {
 
 	private enterCondition(condition: ts.Node): void {
 		this.conditions.push({ scopeBlockLevel: this.blockLevel, node: condition });
+		if (isPromiseType(condition, this.typeChecker)) {
+			this.addFailureAtNode(condition, Rule.FAILURE_STRING_MISSING_AWAIT(condition));
+		}
 	}
 
 	private enterScope(): void {
