@@ -265,7 +265,7 @@ async function conditionalLogicalAnd2(): Promise<boolean> {
 	let val1: boolean;
 	let val2: boolean | null;
 	return val1 && somePromise() && val2 != null;
-	       ~~~~~~~~~~~~~~~~~~~~~ [Promise "val1 && somePromise()" must be handled.]
+	               ~~~~~~~~~~~~~ [Promise "somePromise()" must be handled.]
 }
 
 async function conditionalLogicalAnd3(): Promise<boolean> {
@@ -321,4 +321,18 @@ async function orbitFn1(values: number[]): Promise<void> {
 	}
 
 	await Promise.all(promises);
+}
+
+async function orbitFn2(projectNode: { startsAt: string | null; endsAt: string | null}): Promise<boolean> {
+	let projectCreationIncomplete: (projectNode: typeof projectNode) => Promise<boolean>;
+	let nodeSubtreePeriodUpdatePermissionLoader: { load(node: typeof ProjectNode): Promise<boolean> };
+	if (await projectCreationIncomplete(projectNode)) {
+		return false;
+	}
+	return (
+		projectNode.startsAt != null &&
+		nodeSubtreePeriodUpdatePermissionLoader.load(projectNode) &&
+		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ [Promise "nodeSubtreePeriodUpdatePermissionLoader.load(projectNode)" must be handled.]
+		projectNode.endsAt != null
+	);
 }

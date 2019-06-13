@@ -30,8 +30,8 @@ export class Rule extends Lint.Rules.TypedRule {
 		`Control flow exits - "${promiseId.getText()}" must be handled first.`;
 	public static FAILURE_STRING_DEPENDS_ON_OTHER_AWAIT = (promiseId: ts.Identifier) =>
 		`Existing promise "${promiseId.getText()}" needs to be included in this await expression, eg. use \`Promise.all\`.`;
-	public static FAILURE_STRING_MISSING_AWAIT = (promiseVar: ts.Node) =>
-		`Promise "${promiseVar.getText()}" must be handled.`;
+	public static FAILURE_STRING_MISSING_AWAIT = (promiseExpr: ts.Node) =>
+		`Promise "${promiseExpr.getText()}" must be handled.`;
 
 	public applyWithProgram(sourceFile: ts.SourceFile, program: ts.Program): Lint.RuleFailure[] {
 		return this.applyWithWalker(
@@ -52,7 +52,7 @@ interface Scope {
 export class ProperPromiseUse extends Lint.RuleWalker {
 	private awaitUsages: number = 0;
 	private blockLevel: number = 0;
-	private readonly conditions: { node: ts.Node; scopeBlockLevel: number }[] = [];
+	private readonly conditions: { errorInConditionals: boolean; node: ts.Node; scopeBlockLevel: number }[] = [];
 	private readonly scopes: Scope[] = [{ scopeBlockLevel: 0, promises: new Map() }];
 	private readonly typeChecker: ts.TypeChecker;
 
@@ -82,10 +82,7 @@ export class ProperPromiseUse extends Lint.RuleWalker {
 	}
 
 	private enterCondition(condition: ts.Node): void {
-		this.conditions.push({ scopeBlockLevel: this.blockLevel, node: condition });
-		if (isPromiseType(condition, this.typeChecker)) {
-			this.addFailureAtNode(condition, Rule.FAILURE_STRING_MISSING_AWAIT(condition));
-		}
+		this.conditions.push({ scopeBlockLevel: this.blockLevel, node: condition, errorInConditionals: false });
 	}
 
 	private enterScope(): void {
@@ -105,7 +102,26 @@ export class ProperPromiseUse extends Lint.RuleWalker {
 	}
 
 	private exitCondition(): void {
-		this.conditions.pop();
+		const condition = this.conditions.pop();
+		if (condition == null) {
+			return;
+		}
+
+		if (!condition.errorInConditionals && isNodePromiseType(condition.node, this.typeChecker)) {
+			// Let's attempt to find the concrete branch inside logical ands and ors where this has gone wrong
+			let failureNode = condition.node;
+			while (ts.isBinaryExpression(failureNode)) {
+				if (isNodePromiseType(failureNode.left, this.typeChecker)) {
+					failureNode = failureNode.left;
+				} else if (isNodePromiseType(failureNode.right, this.typeChecker)) {
+					failureNode = failureNode.right;
+				} else {
+					break;
+				}
+			}
+			this.addFailureAtNode(failureNode, Rule.FAILURE_STRING_MISSING_AWAIT(failureNode));
+			this.conditions.forEach(c => (c.errorInConditionals = true));
+		}
 	}
 
 	private exitScope(): void {
@@ -193,7 +209,7 @@ export class ProperPromiseUse extends Lint.RuleWalker {
 			const rhs = binExp.right;
 			if (
 				ts.isIdentifier(lhs) &&
-				(isPromiseType(lhs, this.typeChecker) || isPromiseType(rhs, this.typeChecker))
+				(isNodePromiseType(lhs, this.typeChecker) || isNodePromiseType(rhs, this.typeChecker))
 			) {
 				this.visitNode(rhs);
 				this.addPromiseVariable(lhs);
@@ -210,7 +226,7 @@ export class ProperPromiseUse extends Lint.RuleWalker {
 	}
 
 	public visitBlock(block: ts.Block): void {
-		const isFunctionBlock = ts.isFunctionLike(block.parent);
+		const isFunctionBlock = block.parent != null && ts.isFunctionLike(block.parent);
 		if (!isFunctionBlock) {
 			this.enterBlock();
 		}
@@ -221,7 +237,7 @@ export class ProperPromiseUse extends Lint.RuleWalker {
 	}
 
 	public visitCallExpression(call: ts.CallExpression): void {
-		const isPromise = isPromiseType(call, this.typeChecker);
+		const isPromise = isNodePromiseType(call, this.typeChecker);
 
 		if (isPromise) {
 			this.visitNode(call.expression);
@@ -289,14 +305,20 @@ export class ProperPromiseUse extends Lint.RuleWalker {
 	}
 
 	public visitFunctionDeclaration(funcDecl: ts.FunctionDeclaration): void {
-		this.enterScope();
+		this.enterScope(funcDecl);
 		super.visitFunctionDeclaration(funcDecl);
 		this.exitScope();
 	}
 
 	public visitFunctionExpression(funcExp: ts.FunctionExpression): void {
-		this.enterScope();
+		this.enterScope(funcExp);
 		super.visitFunctionExpression(funcExp);
+		this.exitScope();
+	}
+
+	public visitGetAccessor(getAccessor: ts.GetAccessorDeclaration): void {
+		this.enterScope(getAccessor);
+		super.visitGetAccessor(getAccessor);
 		this.exitScope();
 	}
 
@@ -305,7 +327,7 @@ export class ProperPromiseUse extends Lint.RuleWalker {
 		const promiseType = scope.get(id.getText());
 
 		if (promiseType != null) {
-			if (isPromiseArrayType(id, this.typeChecker) && isArrayPropertyAccess(id)) {
+			if (isNodePromiseArrayType(id, this.typeChecker) && isArrayPropertyAccess(id)) {
 				return super.visitIdentifier(id);
 			}
 			if (this.isConditioned(id.getText())) {
@@ -358,7 +380,7 @@ export class ProperPromiseUse extends Lint.RuleWalker {
 		}
 		const id = paramDecl.name;
 		super.visitParameterDeclaration(paramDecl);
-		if (isPromiseType(id, this.typeChecker)) {
+		if (isNodePromiseType(id, this.typeChecker)) {
 			this.addPromiseVariable(id);
 		}
 	}
@@ -397,7 +419,8 @@ export class ProperPromiseUse extends Lint.RuleWalker {
 			return;
 		}
 
-		const isPromise = isPromiseType(decl.initializer, this.typeChecker) || isPromiseType(binding, this.typeChecker);
+		const isPromise =
+			isNodePromiseType(decl.initializer, this.typeChecker) || isNodePromiseType(binding, this.typeChecker);
 		if (isPromise) {
 			this.addPromiseVariable(binding);
 		}
@@ -413,12 +436,31 @@ export class ProperPromiseUse extends Lint.RuleWalker {
 	}
 }
 
-function isPromiseType(node: ts.Node, typeChecker: ts.TypeChecker): boolean {
+function isNodePromiseType(node: ts.Node, typeChecker: ts.TypeChecker): boolean {
 	const exprType = typeChecker.getTypeAtLocation(node);
 	const typeNode = typeChecker.typeToTypeNode(typeChecker.getNonNullableType(exprType));
 
 	if (typeNode == null) {
 		return false;
+	}
+
+	return isPromiseType(typeNode) || isPromiseArrayType(typeNode);
+}
+
+function isNodePromiseArrayType(node: ts.Node, typeChecker: ts.TypeChecker): boolean {
+	const exprType = typeChecker.getTypeAtLocation(node);
+	const typeNode = typeChecker.typeToTypeNode(typeChecker.getNonNullableType(exprType));
+
+	if (typeNode == null) {
+		return false;
+	}
+
+	return isPromiseArrayType(typeNode);
+}
+
+function isPromiseType(typeNode: ts.TypeNode): boolean {
+	if (ts.isUnionTypeNode(typeNode) || ts.isIntersectionTypeNode(typeNode)) {
+		return typeNode.types.some(x => isPromiseType(x));
 	}
 
 	if (ts.isTypeReferenceNode(typeNode)) {
@@ -428,30 +470,21 @@ function isPromiseType(node: ts.Node, typeChecker: ts.TypeChecker): boolean {
 		}
 	}
 
-	return isPromiseArrayType(node, typeChecker);
+	return isPromiseArrayType(typeNode);
 }
 
-function isPromiseArrayType(node: ts.Node, typeChecker: ts.TypeChecker): boolean {
-	const exprType = typeChecker.getTypeAtLocation(node);
-	const typeNode = typeChecker.typeToTypeNode(typeChecker.getNonNullableType(exprType));
-	if (typeNode == null) {
-		return false;
-	}
-
+function isPromiseArrayType(typeNode: ts.TypeNode): boolean {
 	if (ts.isArrayTypeNode(typeNode)) {
 		const elementType = typeNode.elementType;
 
-		if (!ts.isTypeReferenceNode(elementType)) {
-			return false;
-		}
-		return ts.isIdentifier(elementType.typeName) ? elementType.typeName.escapedText === 'Promise' : false;
+		return isPromiseType(elementType);
 	}
 	return false;
 }
 
 function isArrayPropertyAccess(id: ts.Identifier): boolean {
 	const propertyAccess = id.parent;
-	if (ts.isPropertyAccessExpression(propertyAccess) && propertyAccess.expression === id) {
+	if (propertyAccess != null && ts.isPropertyAccessExpression(propertyAccess) && propertyAccess.expression === id) {
 		return true;
 	}
 	return false;
