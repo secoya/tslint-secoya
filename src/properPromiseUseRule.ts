@@ -59,6 +59,7 @@ interface Scope {
 	functionDecl?: ts.FunctionLikeDeclaration;
 	promises: Map<string, { blockLevel: number; declNode: ts.Identifier }>;
 	scopeBlockLevel: number;
+	tryCatchBlocks: TryStatementInfo[];
 }
 
 const enum TryVisitState {
@@ -67,12 +68,16 @@ const enum TryVisitState {
 	Finally,
 }
 
+interface TryStatementInfo {
+	state: TryVisitState;
+	tryStatement: ts.TryStatement;
+}
+
 export class ProperPromiseUse extends Lint.RuleWalker {
 	private awaitUsages: number = 0;
 	private blockLevel: number = 0;
 	private readonly conditions: { errorInConditionals: boolean; node: ts.Node; scopeBlockLevel: number }[] = [];
-	private readonly scopes: Scope[] = [{ scopeBlockLevel: 0, promises: new Map() }];
-	private readonly tryCatchBlocks: { state: TryVisitState; tryStatement: ts.TryStatement }[] = [];
+	private readonly scopes: Scope[] = [{ scopeBlockLevel: 0, promises: new Map(), tryCatchBlocks: [] }];
 	private readonly typeChecker: ts.TypeChecker;
 
 	public constructor(sourceFile: ts.SourceFile, options: Lint.IOptions, program: ts.Program) {
@@ -81,7 +86,7 @@ export class ProperPromiseUse extends Lint.RuleWalker {
 	}
 
 	private addPromiseVariable(id: ts.Identifier): void {
-		const scope = this.currentScope();
+		const scope = this.currentScopePromises();
 		scope.set(id.getText(), {
 			blockLevel: this.blockLevel,
 			declNode: id,
@@ -89,12 +94,11 @@ export class ProperPromiseUse extends Lint.RuleWalker {
 	}
 
 	private blockPreventingSafeReturn(): ts.Block | null {
-		// If not in an async scope, there's little we can do
-		// in order to fixup on try statements;
-		if (!this.isInAsyncScope()) {
+		const functionScope = this.currentFunctionScope();
+		if (functionScope == null) {
 			return null;
 		}
-		for (const tryCatchBlock of this.tryCatchBlocks) {
+		for (const tryCatchBlock of functionScope.tryCatchBlocks) {
 			const catchClause = tryCatchBlock.tryStatement.catchClause;
 			const finallyBlock = tryCatchBlock.tryStatement.finallyBlock;
 
@@ -108,7 +112,17 @@ export class ProperPromiseUse extends Lint.RuleWalker {
 		return null;
 	}
 
-	private currentScope(): Scope['promises'] {
+	private currentFunctionScope(): (Scope & { functionDecl: ts.FunctionLikeDeclaration }) | null {
+		for (let i = this.scopes.length - 1; i >= 0; i--) {
+			const scope = this.scopes[i];
+			if (scope.functionDecl != null) {
+				return scope as Scope & { functionDecl: ts.FunctionLikeDeclaration };
+			}
+		}
+		return null;
+	}
+
+	private currentScopePromises(): Scope['promises'] {
 		return this.scopes[this.scopes.length - 1].promises;
 	}
 
@@ -130,6 +144,7 @@ export class ProperPromiseUse extends Lint.RuleWalker {
 			functionDecl: functionDecl,
 			promises: new Map(),
 			scopeBlockLevel: this.blockLevel,
+			tryCatchBlocks: [],
 		});
 	}
 
@@ -171,7 +186,7 @@ export class ProperPromiseUse extends Lint.RuleWalker {
 	}
 
 	private failCurrentScope(problemNode: ts.Node, failureString: (node: ts.Identifier) => string): void {
-		const scope = this.currentScope();
+		const scope = this.currentScopePromises();
 		scope.forEach(({ declNode }) => {
 			this.addFailureAtNode(problemNode, failureString(declNode));
 		});
@@ -179,7 +194,7 @@ export class ProperPromiseUse extends Lint.RuleWalker {
 	}
 
 	private failCurrentScopeUnhandled(): void {
-		const scope = this.currentScope();
+		const scope = this.currentScopePromises();
 		scope.forEach(({ declNode }) => {
 			this.addFailureAtNode(declNode, Rule.FAILURE_STRING_MISSING_AWAIT(declNode));
 		});
@@ -206,7 +221,7 @@ export class ProperPromiseUse extends Lint.RuleWalker {
 	}
 
 	private isConditioned(promiseVar: string): boolean {
-		const scope = this.currentScope();
+		const scope = this.currentScopePromises();
 		const varInfo = scope.get(promiseVar);
 		if (varInfo == null) {
 			return false;
@@ -218,18 +233,16 @@ export class ProperPromiseUse extends Lint.RuleWalker {
 		);
 	}
 
-	private isInAsyncScope(): boolean {
-		for (let i = this.scopes.length - 1; i >= 0; i--) {
-			const scope = this.scopes[i];
-			if (scope.functionDecl != null) {
-				return (
-					scope.functionDecl.modifiers != null &&
-					scope.functionDecl.modifiers.some(x => x.kind === ts.SyntaxKind.AsyncKeyword)
-				);
-			}
-		}
-		return false;
-	}
+	// private isCurrentFunctionAsync(): boolean {
+	// 	const functionScope = this.currentFunctionScope();
+	// 	if (functionScope == null) {
+	// 		return false;
+	// 	}
+	// 	return (
+	// 		functionScope.functionDecl.modifiers != null &&
+	// 		functionScope.functionDecl.modifiers.some(x => x.kind === ts.SyntaxKind.AsyncKeyword)
+	// 	);
+	// }
 
 	public getCondition(promiseVar: string): ts.Node {
 		if (!this.isConditioned(promiseVar)) {
@@ -382,7 +395,7 @@ export class ProperPromiseUse extends Lint.RuleWalker {
 	}
 
 	public visitIdentifier(id: ts.Identifier): void {
-		const scope = this.currentScope();
+		const scope = this.currentScopePromises();
 		const promiseType = scope.get(id.getText());
 
 		if (promiseType != null) {
@@ -494,18 +507,23 @@ export class ProperPromiseUse extends Lint.RuleWalker {
 	}
 
 	public visitTryStatement(tryStmt: ts.TryStatement): void {
-		const tryCatchBlocks = { tryStatement: tryStmt, state: TryVisitState.Try };
-		this.tryCatchBlocks.push(tryCatchBlocks);
+		const tryStatementInfo = { tryStatement: tryStmt, state: TryVisitState.Try };
+		const functionScope = this.currentFunctionScope();
+		if (functionScope != null) {
+			functionScope.tryCatchBlocks.push(tryStatementInfo);
+		}
 		this.visitNode(tryStmt.tryBlock);
 		if (tryStmt.catchClause != null) {
-			tryCatchBlocks.state = TryVisitState.Catch;
+			tryStatementInfo.state = TryVisitState.Catch;
 			this.visitNode(tryStmt.catchClause);
 		}
 		if (tryStmt.finallyBlock != null) {
-			tryCatchBlocks.state = TryVisitState.Finally;
+			tryStatementInfo.state = TryVisitState.Finally;
 			this.visitNode(tryStmt.finallyBlock);
 		}
-		this.tryCatchBlocks.pop();
+		if (functionScope != null) {
+			functionScope.tryCatchBlocks.pop();
+		}
 	}
 
 	public visitVariableDeclaration(decl: ts.VariableDeclaration): void {

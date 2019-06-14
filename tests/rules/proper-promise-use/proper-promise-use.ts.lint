@@ -346,10 +346,31 @@ async function mustNotDirectReturnPromisesInsideCatchBlocksWithoutFinallyWithNes
 	}
 }
 
-function doesNotCareAboutTryBlocksOutsideAsyncFunctions(): Promise<void> {
+function doesCareAboutTryBlocksOutsideAsyncFunctions(): Promise<void> {
 	try {
 		return fn();
+		~~~~~~~~~~~~ [Promise "fn()" being directly returned here prevents the block at line 323-324 to track completion of the promise.]
 	} catch (e) {
+	}
+}
+
+function properlyDetectsNestedFunctions(): void {
+	try {
+		const x = (): Promise<void> => {
+			return fn();
+		};
+		const y = () => {
+			const z = () => {
+				try {
+					return fn();
+					~~~~~~~~~~~~ [Promise "fn()" being directly returned here prevents the block at line 336-336 to track completion of the promise.]
+				} catch (e) {}
+			}
+		}
+		return x();
+		~~~~~~~~~~~ [Promise "x()" being directly returned here prevents the block at line 340-342 to track completion of the promise.]
+	} catch (e) {
+
 	}
 }
 
