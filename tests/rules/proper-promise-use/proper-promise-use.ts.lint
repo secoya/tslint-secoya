@@ -316,7 +316,7 @@ async function mustNotDirectReturnPromisesInsideTryBlocks(): Promise<void> {
 
 async function mayDirectReturnPromisesInsideCatchBlocksWithoutFinally(): Promise<void> {
 	try {
-		await fn();
+		return await fn();
 	} catch (e) {
 		return fn();
 	}
