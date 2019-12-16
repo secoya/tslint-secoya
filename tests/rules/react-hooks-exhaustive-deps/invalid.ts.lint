@@ -1,0 +1,100 @@
+function MyComponent() {
+	const local = {};
+	useEffect(() => {
+	console.log(local);
+	}, []);
+	   ~~ [React Hook useEffect has a missing dependency: 'local'. Either include it or remove the dependency array.]
+}
+
+// Note: we *could* detect it's a primitive and never assigned
+// even though it's not a constant -- but we currently don't.
+// So this is an error.
+function MyComponent() {
+	let local = 42;
+	useEffect(() => {
+	console.log(local);
+	}, []);
+	   ~~ [React Hook useEffect has a missing dependency: 'local'. Either include it or remove the dependency array.]
+}
+
+// Regexes are literals but potentially stateful.
+function MyComponent() {
+	const local = /foo/;
+	useEffect(() => {
+	console.log(local);
+	}, []);
+	   ~~ [React Hook useEffect has a missing dependency: 'local'. Either include it or remove the dependency array.]
+}
+
+// Invalid because they don't have a meaning without deps.
+function MyComponent(props) {
+	const value = useMemo(() => { return 2*2; });
+	              ~~~~~~~ [React Hook useMemo does nothing when called with only one argument. Did you forget to pass an array of dependencies?]
+	const fn = useCallback(() => { alert('foo'); });
+	           ~~~~~~~~~~~ [React Hook useCallback does nothing when called with only one argument. Did you forget to pass an array of dependencies?]
+}
+
+// Regression test
+function MyComponent() {
+	const local = {};
+	useEffect(() => {
+	if (true) {
+		console.log(local);
+	}
+	}, []);
+	   ~~ [React Hook useEffect has a missing dependency: 'local'. Either include it or remove the dependency array.]
+}
+
+// Regression test
+function MyComponent() {
+	const local = {};
+	useEffect(() => {
+	try {
+		console.log(local);
+	} finally {}
+	}, []);
+	   ~~ [React Hook useEffect has a missing dependency: 'local'. Either include it or remove the dependency array.]
+}
+
+// Regression test
+function MyComponent() {
+	const local = {};
+	useEffect(() => {
+	function inner() {
+		console.log(local);
+	}
+	inner();
+	}, []);
+	   ~~ [React Hook useEffect has a missing dependency: 'local'. Either include it or remove the dependency array.]
+}
+
+function MyComponent() {
+	const local1 = {};
+	{
+		const local2 = {};
+		useEffect(() => {
+			console.log(local1);
+			console.log(local2);
+		}, []);
+		   ~~ [React Hook useEffect has missing dependencies: 'local1' and 'local2'. Either include them or remove the dependency array.]
+	}
+}
+
+function MyComponent() {
+	const local1 = {};
+	const local2 = {};
+	useEffect(() => {
+	console.log(local1);
+	console.log(local2);
+	}, [local1]);
+	   ~~~~~~~~ [React Hook useEffect has a missing dependency: 'local2'. Either include it or remove the dependency array.]
+}
+
+function MyComponent() {
+	const local1 = {};
+	const local2 = {};
+	useMemo(() => {
+		console.log(local1);
+	}, [local1, local2]);
+	   ~~~~~~~~~~~~~~~~ [React Hook useMemo has an unnecessary dependency: 'local2'. Either exclude it or remove the dependency array.]
+}

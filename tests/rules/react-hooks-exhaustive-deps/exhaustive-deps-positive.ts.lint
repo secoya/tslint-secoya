@@ -1,0 +1,691 @@
+
+function MyComponent() {
+	const local = {};
+	useEffect(() => {
+	console.log(local);
+	});
+}
+
+function MyComponent() {
+	useEffect(() => {
+	const local = {};
+	console.log(local);
+	}, []);
+}
+
+function MyComponent() {
+	const local = {};
+	useEffect(() => {
+	console.log(local);
+	}, [local]);
+}
+
+function MyComponent() {
+	useEffect(() => {
+	console.log(props.foo);
+	}, []);
+}
+
+function MyComponent() {
+	const local1 = {};
+	{
+	const local2 = {};
+	useEffect(() => {
+		console.log(local1);
+		console.log(local2);
+	});
+	}
+}
+
+function MyComponent() {
+	const local1 = {};
+	{
+	const local2 = {};
+	useCallback(() => {
+		console.log(local1);
+		console.log(local2);
+	}, [local1, local2]);
+	}
+}
+
+function MyComponent() {
+	const local = {};
+	useEffect(() => {
+	console.log(local);
+	console.log(local);
+	}, [local]);
+}
+
+function MyComponent() {
+	useEffect(() => {
+	console.log(unresolved);
+	}, []);
+}
+
+function MyComponent() {
+	const local = {};
+	useEffect(() => {
+	console.log(local);
+	}, [,,,local,,,]);
+}
+
+function MyComponent({ foo }) {
+	useEffect(() => {
+	console.log(foo.length);
+	}, [foo]);
+}
+function MyComponent({ foo }) {
+	useEffect(() => {
+	console.log(foo.length);
+	console.log(foo.slice(0));
+	}, [foo]);
+}
+function MyComponent({ history }) {
+	useEffect(() => {
+	return history.listen();
+	}, [history]);
+}
+
+function MyComponent(props) {
+	useEffect(() => {});
+	useLayoutEffect(() => {});
+	useImperativeHandle(props.innerRef, () => {});
+}
+
+function MyComponent(props) {
+	useEffect(() => {
+	console.log(props.foo);
+	}, [props.foo]);
+}
+
+function MyComponent(props) {
+	useEffect(() => {
+	console.log(props.foo);
+	console.log(props.bar);
+	}, [props.bar, props.foo]);
+}
+
+function MyComponent(props) {
+	useEffect(() => {
+	console.log(props.foo);
+	console.log(props.bar);
+	}, [props.foo, props.bar]);
+}
+
+function MyComponent(props) {
+	const local = {};
+	useEffect(() => {
+	console.log(props.foo);
+	console.log(props.bar);
+	console.log(local);
+	}, [props.foo, props.bar, local]);
+}
+
+function MyComponent(props) {
+	const local = {};
+	useEffect(() => {
+	console.log(props.foo);
+	console.log(props.bar);
+	}, [props, props.foo]);
+	let color = {}
+	useEffect(() => {
+	console.log(props.foo.bar.baz);
+	console.log(color);
+	}, [props.foo, props.foo.bar.baz, color]);
+}
+
+function MyComponent(props) {
+	useCustomEffect(() => {
+	console.log(props.foo);
+	});
+}
+function MyComponent(props) {
+	useCustomEffect(() => {
+	console.log(props.foo);
+	}, [props.foo]);
+}
+function MyComponent(props) {
+	useAnotherCustomEffect(() => {
+	console.log(props.foo);
+	}, []);
+}
+
+function MyComponent() {
+	const ref = useRef();
+	useEffect(() => {
+	console.log(ref.current);
+	}, [ref]);
+}
+
+function MyComponent() {
+	const ref = useRef();
+	useEffect(() => {
+	console.log(ref.current);
+	}, []);
+}
+
+function MyComponent({ maybeRef2, foo }) {
+	const definitelyRef1 = useRef();
+	const definitelyRef2 = useRef();
+	const maybeRef1 = useSomeOtherRefyThing();
+	const [state1, setState1] = useState();
+	const [state2, setState2] = React.useState();
+	const [state3, dispatch1] = useReducer();
+	const [state4, dispatch2] = React.useReducer();
+	const [state5, maybeSetState] = useFunnyState();
+	const [state6, maybeDispatch] = useFunnyReducer();
+	const mySetState = useCallback(() => {}, []);
+	let myDispatch = useCallback(() => {}, []);
+	useEffect(() => {
+	// Known to be static
+	console.log(definitelyRef1.current);
+	console.log(definitelyRef2.current);
+	console.log(maybeRef1.current);
+	console.log(maybeRef2.current);
+	setState1();
+	setState2();
+	dispatch1();
+	dispatch2();
+	// Dynamic
+	console.log(state1);
+	console.log(state2);
+	console.log(state3);
+	console.log(state4);
+	console.log(state5);
+	console.log(state6);
+	mySetState();
+	myDispatch();
+	// Not sure; assume dynamic
+	maybeSetState();
+	maybeDispatch();
+	}, [
+	// Dynamic
+	state1, state2, state3, state4, state5, state6,
+	maybeRef1, maybeRef2,
+	// Not sure; assume dynamic
+	mySetState, myDispatch,
+	maybeSetState, maybeDispatch
+	// In this test, we don't specify static deps.
+	// That should be okay.
+	]);
+}
+
+function MyComponent({ maybeRef2 }) {
+	const definitelyRef1 = useRef();
+	const definitelyRef2 = useRef();
+	const maybeRef1 = useSomeOtherRefyThing();
+	const [state1, setState1] = useState();
+	const [state2, setState2] = React.useState();
+	const [state3, dispatch1] = useReducer();
+	const [state4, dispatch2] = React.useReducer();
+	const [state5, maybeSetState] = useFunnyState();
+	const [state6, maybeDispatch] = useFunnyReducer();
+	const mySetState = useCallback(() => {}, []);
+	let myDispatch = useCallback(() => {}, []);
+	useEffect(() => {
+	// Known to be static
+	console.log(definitelyRef1.current);
+	console.log(definitelyRef2.current);
+	console.log(maybeRef1.current);
+	console.log(maybeRef2.current);
+	setState1();
+	setState2();
+	dispatch1();
+	dispatch2();
+	// Dynamic
+	console.log(state1);
+	console.log(state2);
+	console.log(state3);
+	console.log(state4);
+	console.log(state5);
+	console.log(state6);
+	mySetState();
+	myDispatch();
+	// Not sure; assume dynamic
+	maybeSetState();
+	maybeDispatch();
+	}, [
+	// Dynamic
+	state1, state2, state3, state4, state5, state6,
+	maybeRef1, maybeRef2,
+	// Not sure; assume dynamic
+	mySetState, myDispatch,
+	maybeSetState, maybeDispatch,
+	// In this test, we specify static deps.
+	// That should be okay too!
+	definitelyRef1, definitelyRef2, setState1, setState2, dispatch1, dispatch2
+	]);
+}
+
+const MyComponent = forwardRef((props, ref) => {
+	useImperativeHandle(ref, () => ({
+	focus() {
+		alert(props.hello);
+	}
+	}))
+});
+
+const MyComponent = forwardRef((props, ref) => {
+	useImperativeHandle(ref, () => ({
+	focus() {
+		alert(props.hello);
+	}
+	}), [props.hello])
+});
+
+function MyComponent(props) {
+	let obj = {};
+	useEffect(() => {
+	obj.foo = true;
+	}, [obj]);
+}
+
+function MyComponent() {
+	const myRef = useRef();
+	useEffect(() => {
+	const handleMove = () => {};
+	myRef.current = {};
+	return () => {
+		console.log(myRef.current.toString())
+	};
+	}, []);
+	return <div />;
+}
+
+function useMyThing(myRef) {
+	useEffect(() => {
+	const handleMove = () => {};
+	myRef.current = {};
+	return () => {
+		console.log(myRef.current.toString())
+	};
+	}, [myRef]);
+}
+
+function MyComponent() {
+	const myRef = useRef();
+	useEffect(() => {
+	const handleMove = () => {};
+	const node = myRef.current;
+	node.addEventListener('mousemove', handleMove);
+	return () => node.removeEventListener('mousemove', handleMove);
+	}, []);
+	return <div ref={myRef} />;
+}
+
+function useMyThing(myRef) {
+	useEffect(() => {
+	const handleMove = () => {};
+	const node = myRef.current;
+	node.addEventListener('mousemove', handleMove);
+	return () => node.removeEventListener('mousemove', handleMove);
+	}, [myRef]);
+	return <div ref={myRef} />;
+}
+
+function useMyThing(myRef) {
+	useCallback(() => {
+	const handleMouse = () => {};
+	myRef.current.addEventListener('mousemove', handleMouse);
+	myRef.current.addEventListener('mousein', handleMouse);
+	return function() {
+		setTimeout(() => {
+		myRef.current.removeEventListener('mousemove', handleMouse);
+		myRef.current.removeEventListener('mousein', handleMouse);
+		});
+	}
+	}, [myRef]);
+}
+
+function useMyThing() {
+	const myRef = useRef();
+	useEffect(() => {
+	const handleMove = () => {
+		console.log(myRef.current)
+	};
+	window.addEventListener('mousemove', handleMove);
+	return () => window.removeEventListener('mousemove', handleMove);
+	}, []);
+	return <div ref={myRef} />;
+}
+
+function useMyThing() {
+	const myRef = useRef();
+	useEffect(() => {
+	const handleMove = () => {
+		return () => window.removeEventListener('mousemove', handleMove);
+	};
+	window.addEventListener('mousemove', handleMove);
+	return () => {};
+	}, []);
+	return <div ref={myRef} />;
+}
+
+function MyComponent() {
+	const local1 = 42;
+	const local2 = '42';
+	const local3 = null;
+	useEffect(() => {
+	console.log(local1);
+	console.log(local2);
+	console.log(local3);
+	}, []);
+}
+
+function MyComponent() {
+	const local1 = 42;
+	const local2 = '42';
+	const local3 = null;
+	useEffect(() => {
+	console.log(local1);
+	console.log(local2);
+	console.log(local3);
+	}, [local1, local2, local3]);
+}
+
+function MyComponent(props) {
+	const local = props.local;
+	useEffect(() => {}, [local]);
+}
+
+function Foo({ activeTab }) {
+	useEffect(() => {
+	window.scrollTo(0, 0);
+	}, [activeTab]);
+}
+
+function MyComponent(props) {
+	useEffect(() => {
+	console.log(props.foo.bar.baz);
+	}, [props]);
+	useEffect(() => {
+	console.log(props.foo.bar.baz);
+	}, [props.foo]);
+	useEffect(() => {
+	console.log(props.foo.bar.baz);
+	}, [props.foo.bar]);
+	useEffect(() => {
+	console.log(props.foo.bar.baz);
+	}, [props.foo.bar.baz]);
+}
+
+function MyComponent(props) {
+	const fn = useCallback(() => {
+	console.log(props.foo.bar.baz);
+	}, [props]);
+	const fn2 = useCallback(() => {
+	console.log(props.foo.bar.baz);
+	}, [props.foo]);
+	const fn3 = useMemo(() => {
+	console.log(props.foo.bar.baz);
+	}, [props.foo.bar]);
+	const fn4 = useMemo(() => {
+	console.log(props.foo.bar.baz);
+	}, [props.foo.bar.baz]);
+}
+
+function MyComponent(props) {
+	function handleNext1() {
+	console.log('hello');
+	}
+	const handleNext2 = () => {
+	console.log('hello');
+	};
+	let handleNext3 = function() {
+	console.log('hello');
+	};
+	useEffect(() => {
+	return Store.subscribe(handleNext1);
+	}, []);
+	useLayoutEffect(() => {
+	return Store.subscribe(handleNext2);
+	}, []);
+	useMemo(() => {
+	return Store.subscribe(handleNext3);
+	}, []);
+}
+
+function MyComponent(props) {
+	function handleNext() {
+	console.log('hello');
+	}
+	useEffect(() => {
+	return Store.subscribe(handleNext);
+	}, []);
+	useLayoutEffect(() => {
+	return Store.subscribe(handleNext);
+	}, []);
+	useMemo(() => {
+	return Store.subscribe(handleNext);
+	}, []);
+}
+
+function MyComponent(props) {
+	let [, setState] = useState();
+	let [, dispatch] = React.useReducer();
+	function handleNext1(value) {
+	let value2 = value * 100;
+	setState(value2);
+	console.log('hello');
+	}
+	const handleNext2 = (value) => {
+	setState(foo(value));
+	console.log('hello');
+	};
+	let handleNext3 = function(value) {
+	console.log(value);
+	dispatch({ type: 'x', value });
+	};
+	useEffect(() => {
+	return Store.subscribe(handleNext1);
+	}, []);
+	useLayoutEffect(() => {
+	return Store.subscribe(handleNext2);
+	}, []);
+	useMemo(() => {
+	return Store.subscribe(handleNext3);
+	}, []);
+}
+
+function useInterval(callback, delay) {
+	const savedCallback = useRef();
+	useEffect(() => {
+	savedCallback.current = callback;
+	});
+	useEffect(() => {
+	function tick() {
+		savedCallback.current();
+	}
+	if (delay !== null) {
+		let id = setInterval(tick, delay);
+		return () => clearInterval(id);
+	}
+	}, [delay]);
+}
+
+function Counter() {
+	const [count, setCount] = useState(0);
+	useEffect(() => {
+	let id = setInterval(() => {
+		setCount(c => c + 1);
+	}, 1000);
+	return () => clearInterval(id);
+	}, []);
+	return <h1>{count}</h1>;
+}
+
+function Counter() {
+	const [count, setCount] = useState(0);
+	function tick() {
+	setCount(c => c + 1);
+	}
+	useEffect(() => {
+	let id = setInterval(() => {
+		tick();
+	}, 1000);
+	return () => clearInterval(id);
+	}, []);
+	return <h1>{count}</h1>;
+}
+
+function Counter() {
+	const [count, dispatch] = useReducer((state, action) => {
+	if (action === 'inc') {
+		return state + 1;
+	}
+	}, 0);
+	useEffect(() => {
+	let id = setInterval(() => {
+		dispatch('inc');
+	}, 1000);
+	return () => clearInterval(id);
+	}, []);
+	return <h1>{count}</h1>;
+}
+
+function Counter() {
+	const [count, dispatch] = useReducer((state, action) => {
+	if (action === 'inc') {
+		return state + 1;
+	}
+	}, 0);
+	const tick = () => {
+	dispatch('inc');
+	};
+	useEffect(() => {
+	let id = setInterval(tick, 1000);
+	return () => clearInterval(id);
+	}, []);
+	return <h1>{count}</h1>;
+}
+
+function Podcasts() {
+	useEffect(() => {
+	setPodcasts([]);
+	}, []);
+	let [podcasts, setPodcasts] = useState(null);
+}
+
+function withFetch(fetchPodcasts) {
+	return function Podcasts({ id }) {
+	let [podcasts, setPodcasts] = useState(null);
+	useEffect(() => {
+		fetchPodcasts(id).then(setPodcasts);
+	}, [id]);
+	}
+}
+
+function Podcasts({ id }) {
+	let [podcasts, setPodcasts] = useState(null);
+	useEffect(() => {
+	function doFetch({ fetchPodcasts }) {
+		fetchPodcasts(id).then(setPodcasts);
+	}
+	doFetch({ fetchPodcasts: API.fetchPodcasts });
+	}, [id]);
+}
+
+function Counter() {
+	let [count, setCount] = useState(0);
+	function increment(x) {
+	return x + 1;
+	}
+	useEffect(() => {
+	let id = setInterval(() => {
+		setCount(increment);
+	}, 1000);
+	return () => clearInterval(id);
+	}, []);
+	return <h1>{count}</h1>;
+}
+
+function Counter() {
+	let [count, setCount] = useState(0);
+	function increment(x) {
+	return x + 1;
+	}
+	useEffect(() => {
+	let id = setInterval(() => {
+		setCount(count => increment(count));
+	}, 1000);
+	return () => clearInterval(id);
+	}, []);
+	return <h1>{count}</h1>;
+}
+
+function withStuff(increment) {
+	return function Counter() {
+	let [count, setCount] = useState(0);
+	useEffect(() => {
+		let id = setInterval(() => {
+		setCount(count => count + increment);
+		}, 1000);
+		return () => clearInterval(id);
+	}, []);
+	return <h1>{count}</h1>;
+	}
+}
+
+function App() {
+	const [query, setQuery] = useState('react');
+	const [state, setState] = useState(null);
+	useEffect(() => {
+	let ignore = false;
+	fetchSomething();
+	async function fetchSomething() {
+		const result = await (await fetch('http://hn.algolia.com/api/v1/search?query=' + query)).json();
+		if (!ignore) setState(result);
+	}
+	return () => { ignore = true; };
+	}, [query]);
+	return (
+	<>
+		<input value={query} onChange={e => setQuery(e.target.value)} />
+		{JSON.stringify(state)}
+	</>
+	);
+}
+
+function Example() {
+	const foo = useCallback(() => {
+	foo();
+	}, []);
+}
+
+function Example({ prop }) {
+	const foo = useCallback(() => {
+	if (prop) {
+		foo();
+	}
+	}, [prop]);
+}
+
+function Hello() {
+	const [state, setState] = useState(0);
+	useEffect(() => {
+	const handleResize = () => setState(window.innerWidth);
+	window.addEventListener('resize', handleResize);
+	return () => window.removeEventListener('resize', handleResize);
+	});
+}
+
+function Example({ prop }) {
+	const bar = useEffect(<T>(a: T): Hello => {
+	prop();
+	}, [prop]);
+}
+
+function Example() {
+	useEffect(() => {
+	arguments
+	}, [])
+}
+
+function Example() {
+	useEffect(() => {
+	const bar = () => {
+		arguments;
+	};
+	bar();
+	}, [])
+}

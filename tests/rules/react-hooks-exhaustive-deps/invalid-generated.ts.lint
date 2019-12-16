@@ -1,0 +1,1047 @@
+              function MyComponent() {
+                const local = {};
+                useEffect(() => {
+                  console.log(local);
+                }, []);
+                   ~~ [React Hook useEffect has a missing dependency: 'local'. Either include it or remove the dependency array.]
+              }
+
+
+
+              function MyComponent() {
+                let local = 42;
+                useEffect(() => {
+                  console.log(local);
+                }, []);
+                   ~~ [React Hook useEffect has a missing dependency: 'local'. Either include it or remove the dependency array.]
+              }
+
+
+
+              function MyComponent() {
+                const local = /foo/;
+                useEffect(() => {
+                  console.log(local);
+                }, []);
+                   ~~ [React Hook useEffect has a missing dependency: 'local'. Either include it or remove the dependency array.]
+              }
+
+
+
+              function MyComponent() {
+                const local = {};
+                useEffect(() => {
+                  if (true) {
+                    console.log(local);
+                  }
+                }, []);
+                   ~~ [React Hook useEffect has a missing dependency: 'local'. Either include it or remove the dependency array.]
+              }
+
+
+
+              function MyComponent() {
+                const local = {};
+                useEffect(() => {
+                  try {
+                    console.log(local);
+                  } finally {}
+                }, []);
+                   ~~ [React Hook useEffect has a missing dependency: 'local'. Either include it or remove the dependency array.]
+              }
+
+
+
+              function MyComponent() {
+                const local = {};
+                useEffect(() => {
+                  function inner() {
+                    console.log(local);
+                  }
+                  inner();
+                }, []);
+                   ~~ [React Hook useEffect has a missing dependency: 'local'. Either include it or remove the dependency array.]
+              }
+
+
+
+              function MyComponent() {
+                const local1 = {};
+                {
+                  const local2 = {};
+                  useEffect(() => {
+                    console.log(local1);
+                    console.log(local2);
+                  }, []);
+                     ~~ [React Hook useEffect has missing dependencies: 'local1' and 'local2'. Either include them or remove the dependency array.]
+                }
+              }
+
+
+
+              function MyComponent() {
+                const local1 = {};
+                const local2 = {};
+                useEffect(() => {
+                  console.log(local1);
+                  console.log(local2);
+                }, [local1]);
+                   ~~~~~~~~ [React Hook useEffect has a missing dependency: 'local2'. Either include it or remove the dependency array.]
+              }
+
+
+
+              function MyComponent() {
+                const local1 = {};
+                const local2 = {};
+                useMemo(() => {
+                  console.log(local1);
+                }, [local1, local2]);
+                   ~~~~~~~~~~~~~~~~ [React Hook useMemo has an unnecessary dependency: 'local2'. Either exclude it or remove the dependency array.]
+              }
+
+
+
+              function MyComponent() {
+                const local1 = {};
+                function MyNestedComponent() {
+                  const local2 = {};
+                  useCallback(() => {
+                    console.log(local1);
+                    console.log(local2);
+                  }, [local1]);
+                     ~~~~~~~~ [React Hook useCallback has a missing dependency: 'local2'. Either include it or remove the dependency array. Outer scope values like 'local1' aren't valid dependencies because mutating them doesn't re-render the component.]
+                }
+              }
+
+
+
+              function MyComponent() {
+                const local = {};
+                useEffect(() => {
+                  console.log(local);
+                  console.log(local);
+                }, []);
+                   ~~ [React Hook useEffect has a missing dependency: 'local'. Either include it or remove the dependency array.]
+              }
+
+
+
+              function MyComponent() {
+                const local = {};
+                useEffect(() => {
+                  console.log(local);
+                  console.log(local);
+                }, [local, local]);
+                   ~~~~~~~~~~~~~~ [React Hook useEffect has a duplicate dependency: 'local'. Either omit it or remove the dependency array.]
+              }
+
+
+
+              function MyComponent() {
+                useCallback(() => {}, [window]);
+                                      ~~~~~~~~ [React Hook useCallback has an unnecessary dependency: 'window'. Either exclude it or remove the dependency array. Outer scope values like 'window' aren't valid dependencies because mutating them doesn't re-render the component.]
+              }
+
+
+
+              function MyComponent(props) {
+                let local = props.foo;
+                useCallback(() => {}, [local]);
+                                      ~~~~~~~ [React Hook useCallback has an unnecessary dependency: 'local'. Either exclude it or remove the dependency array.]
+              }
+
+
+
+              function MyComponent({ history }) {
+                useEffect(() => {
+                  return history.listen();
+                }, []);
+                   ~~ [React Hook useEffect has a missing dependency: 'history'. Either include it or remove the dependency array.]
+              }
+
+
+
+              function MyComponent({ history }) {
+                useEffect(() => {
+                  return [
+                    history.foo.bar[2].dobedo.listen(),
+                    history.foo.bar().dobedo.listen[2]
+                  ];
+                }, []);
+                   ~~ [React Hook useEffect has a missing dependency: 'history.foo'. Either include it or remove the dependency array.]
+              }
+
+
+
+              function MyComponent() {
+                useEffect(() => {}, ['foo']);
+                                     ~~~~~ [The 'foo' literal is not a valid dependency because it never changes. You can safely remove it.]
+              }
+
+
+
+              function MyComponent() {
+                const dependencies = [];
+                useEffect(() => {}, dependencies);
+                                    ~~~~~~~~~~~~ [React Hook useEffect was passed a dependency list that is not an array literal. This means we can't statically verify whether you've passed the correct dependencies.]
+              }
+
+
+
+              function MyComponent() {
+                const local = {};
+                useEffect(() => {
+                  console.log(local);
+                }, [local, ...dependencies]);
+                           ~~~~~~~~~~~~~~~ [React Hook useEffect has a spread element in its dependency array. This means we can't statically verify whether you've passed the correct dependencies.]
+              }
+
+
+
+              function MyComponent(props) {
+                useEffect(() => {
+                  console.log(props.items[0]);
+                }, [props.items, props.items[0]]);
+                                 ~~~~~~~~~~~~~~ [React Hook useEffect has a complex expression in the dependency array. Extract it to a separate variable so it can be statically checked.]
+              }
+
+
+
+              function MyComponent({ items }) {
+                useEffect(() => {
+                  console.log(items[0]);
+                }, [items, items[0]]);
+                           ~~~~~~~~ [React Hook useEffect has a complex expression in the dependency array. Extract it to a separate variable so it can be statically checked.]
+              }
+
+
+
+              function MyComponent(props) {
+                const local = {};
+                useCallback(() => {
+                  console.log(props.foo);
+                  console.log(props.bar);
+                }, [props, props.foo]);
+                   ~~~~~~~~~~~~~~~~~~ [React Hook useCallback has an unnecessary dependency: 'props.foo'. Either exclude it or remove the dependency array.]
+              }
+
+
+
+              function MyComponent(props) {
+                const local = {};
+                useCallback(() => {
+                  console.log(props.foo);
+                  console.log(props.bar);
+                }, []);
+                   ~~ [React Hook useCallback has missing dependencies: 'props.bar' and 'props.foo'. Either include them or remove the dependency array.]
+              }
+
+
+
+              function MyComponent() {
+                const local = {id: 42};
+                useEffect(() => {
+                  console.log(local);
+                }, [local.id]);
+                   ~~~~~~~~~~ [React Hook useEffect has a missing dependency: 'local'. Either include it or remove the dependency array.]
+              }
+
+
+
+              function MyComponent() {
+                const local = {id: 42};
+                const fn = useCallback(() => {
+                  console.log(local);
+                }, [local.id]);
+                   ~~~~~~~~~~ [React Hook useCallback has a missing dependency: 'local'. Either include it or remove the dependency array.]
+              }
+
+
+
+              function MyComponent() {
+                const local = {id: 42};
+                const fn = useCallback(() => {
+                  console.log(local);
+                }, [local.id, local]);
+                   ~~~~~~~~~~~~~~~~~ [React Hook useCallback has an unnecessary dependency: 'local.id'. Either exclude it or remove the dependency array.]
+              }
+
+
+
+              function MyComponent(props) {
+                const fn = useCallback(() => {
+                  console.log(props.foo.bar.baz);
+                }, []);
+                   ~~ [React Hook useCallback has a missing dependency: 'props.foo.bar.baz'. Either include it or remove the dependency array.]
+              }
+
+
+
+              function MyComponent(props) {
+                let color = {}
+                const fn = useCallback(() => {
+                  console.log(props.foo.bar.baz);
+                  console.log(color);
+                }, [props.foo, props.foo.bar.baz]);
+                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ [React Hook useCallback has a missing dependency: 'color'. Either include it or remove the dependency array.]
+              }
+
+
+
+              function MyComponent(props) {
+                const fn = useCallback(() => {
+                  console.log(props.foo.bar.baz);
+                }, [props.foo.bar.baz, props.foo]);
+                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ [React Hook useCallback has an unnecessary dependency: 'props.foo.bar.baz'. Either exclude it or remove the dependency array.]
+              }
+
+
+
+              function MyComponent(props) {
+                const fn = useCallback(() => {
+                  console.log(props.foo.bar.baz);
+                  console.log(props.foo.fizz.bizz);
+                }, []);
+                   ~~ [React Hook useCallback has missing dependencies: 'props.foo.bar.baz' and 'props.foo.fizz.bizz'. Either include them or remove the dependency array.]
+              }
+
+
+
+              function MyComponent(props) {
+                const fn = useCallback(() => {
+                  console.log(props.foo.bar);
+                }, [props.foo.bar.baz]);
+                   ~~~~~~~~~~~~~~~~~~~ [React Hook useCallback has a missing dependency: 'props.foo.bar'. Either include it or remove the dependency array.]
+              }
+
+
+
+              function MyComponent(props) {
+                const fn = useCallback(() => {
+                  console.log(props);
+                  console.log(props.hello);
+                }, [props.foo.bar.baz]);
+                   ~~~~~~~~~~~~~~~~~~~ [React Hook useCallback has a missing dependency: 'props'. Either include it or remove the dependency array.]
+              }
+
+
+
+              function MyComponent() {
+                const local = {};
+                useEffect(() => {
+                  console.log(local);
+                }, [local, local]);
+                   ~~~~~~~~~~~~~~ [React Hook useEffect has a duplicate dependency: 'local'. Either omit it or remove the dependency array.]
+              }
+
+
+
+              function MyComponent() {
+                const local1 = {};
+                useCallback(() => {
+                  const local1 = {};
+                  console.log(local1);
+                }, [local1]);
+                   ~~~~~~~~ [React Hook useCallback has an unnecessary dependency: 'local1'. Either exclude it or remove the dependency array.]
+              }
+
+
+
+              function MyComponent() {
+                const local1 = {};
+                useCallback(() => {}, [local1]);
+                                      ~~~~~~~~ [React Hook useCallback has an unnecessary dependency: 'local1'. Either exclude it or remove the dependency array.]
+              }
+
+
+
+              function MyComponent(props) {
+                useEffect(() => {
+                  console.log(props.foo);
+                }, []);
+                   ~~ [React Hook useEffect has a missing dependency: 'props.foo'. Either include it or remove the dependency array.]
+              }
+
+
+
+              function MyComponent(props) {
+                useEffect(() => {
+                  console.log(props.foo);
+                  console.log(props.bar);
+                }, []);
+                   ~~ [React Hook useEffect has missing dependencies: 'props.bar' and 'props.foo'. Either include them or remove the dependency array.]
+              }
+
+
+
+              function MyComponent(props) {
+                let a, b, c, d, e, f, g;
+                useEffect(() => {
+                  console.log(b, e, d, c, a, g, f);
+                }, [c, a, g]);
+                   ~~~~~~~~~ [React Hook useEffect has missing dependencies: 'b', 'd', 'e', and 'f'. Either include them or remove the dependency array.]
+              }
+
+
+
+              function MyComponent(props) {
+                let a, b, c, d, e, f, g;
+                useEffect(() => {
+                  console.log(b, e, d, c, a, g, f);
+                }, [a, c, g]);
+                   ~~~~~~~~~ [React Hook useEffect has missing dependencies: 'b', 'd', 'e', and 'f'. Either include them or remove the dependency array.]
+              }
+
+
+
+              function MyComponent(props) {
+                let a, b, c, d, e, f, g;
+                useEffect(() => {
+                  console.log(b, e, d, c, a, g, f);
+                }, []);
+                   ~~ [React Hook useEffect has missing dependencies: 'a', 'b', 'c', 'd', 'e', 'f', and 'g'. Either include them or remove the dependency array.]
+              }
+
+
+
+              function MyComponent(props) {
+                const local = {};
+                useEffect(() => {
+                  console.log(props.foo);
+                  console.log(props.bar);
+                  console.log(local);
+                }, []);
+                   ~~ [React Hook useEffect has missing dependencies: 'local', 'props.bar', and 'props.foo'. Either include them or remove the dependency array.]
+              }
+
+
+
+              function MyComponent(props) {
+                const local = {};
+                useEffect(() => {
+                  console.log(props.foo);
+                  console.log(props.bar);
+                  console.log(local);
+                }, [props]);
+                   ~~~~~~~ [React Hook useEffect has a missing dependency: 'local'. Either include it or remove the dependency array.]
+              }
+
+
+
+              function MyComponent() {
+                const ref = useRef();
+                const [state, setState] = useState();
+                useEffect(() => {
+                  ref.current = {};
+                  setState(state + 1);
+                }, []);
+                   ~~ [React Hook useEffect has a missing dependency: 'state'. Either include it or remove the dependency array. You can also do a functional update 'setState(s => ...)' if you only need 'state' in the 'setState' call.]
+              }
+
+
+
+              function MyComponent() {
+                const ref = useRef();
+                const [state, setState] = useState();
+                useEffect(() => {
+                  ref.current = {};
+                  setState(state + 1);
+                }, [ref]);
+                   ~~~~~ [React Hook useEffect has a missing dependency: 'state'. Either include it or remove the dependency array. You can also do a functional update 'setState(s => ...)' if you only need 'state' in the 'setState' call.]
+              }
+
+
+
+              function MyComponent(props) {
+                const ref1 = useRef();
+                const ref2 = useRef();
+                useEffect(() => {
+                  ref1.current.focus();
+                  console.log(ref2.current.textContent);
+                  alert(props.someOtherRefs.current.innerHTML);
+                  fetch(props.color);
+                }, []);
+                   ~~ [React Hook useEffect has missing dependencies: 'props.color' and 'props.someOtherRefs'. Either include them or remove the dependency array.]
+              }
+
+
+
+              function MyComponent(props) {
+                const ref1 = useRef();
+                const ref2 = useRef();
+                useEffect(() => {
+                  ref1.current.focus();
+                  console.log(ref2.current.textContent);
+                  alert(props.someOtherRefs.current.innerHTML);
+                  fetch(props.color);
+                }, [ref1.current, ref2.current, props.someOtherRefs, props.color]);
+                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ [React Hook useEffect has unnecessary dependencies: 'ref1.current' and 'ref2.current'. Either exclude them or remove the dependency array. Mutable values like 'ref1.current' aren't valid dependencies because mutating them doesn't re-render the component.]
+              }
+
+
+
+              function MyComponent() {
+                const ref = useRef();
+                useEffect(() => {
+                  console.log(ref.current);
+                }, [ref.current]);
+                   ~~~~~~~~~~~~~ [React Hook useEffect has an unnecessary dependency: 'ref.current'. Either exclude it or remove the dependency array. Mutable values like 'ref.current' aren't valid dependencies because mutating them doesn't re-render the component.]
+              }
+
+
+
+              function MyComponent({ activeTab }) {
+                const ref1 = useRef();
+                const ref2 = useRef();
+                useEffect(() => {
+                  ref1.current.scrollTop = 0;
+                  ref2.current.scrollTop = 0;
+                }, [ref1.current, ref2.current, activeTab]);
+                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ [React Hook useEffect has unnecessary dependencies: 'ref1.current' and 'ref2.current'. Either exclude them or remove the dependency array. Mutable values like 'ref1.current' aren't valid dependencies because mutating them doesn't re-render the component.]
+              }
+
+
+
+              function MyComponent({ activeTab, initY }) {
+                const ref1 = useRef();
+                const ref2 = useRef();
+                const fn = useCallback(() => {
+                  ref1.current.scrollTop = initY;
+                  ref2.current.scrollTop = initY;
+                }, [ref1.current, ref2.current, activeTab, initY]);
+                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ [React Hook useCallback has unnecessary dependencies: 'activeTab', 'ref1.current', and 'ref2.current'. Either exclude them or remove the dependency array. Mutable values like 'ref1.current' aren't valid dependencies because mutating them doesn't re-render the component.]
+              }
+
+
+
+              function MyComponent() {
+                const ref = useRef();
+                useEffect(() => {
+                  console.log(ref.current);
+                }, [ref.current, ref]);
+                   ~~~~~~~~~~~~~~~~~~ [React Hook useEffect has an unnecessary dependency: 'ref.current'. Either exclude it or remove the dependency array. Mutable values like 'ref.current' aren't valid dependencies because mutating them doesn't re-render the component.]
+              }
+
+
+
+              const MyComponent = forwardRef((props, ref) => {
+                useImperativeHandle(ref, () => ({
+                  focus() {
+                    alert(props.hello);
+                  }
+                }), [])
+                    ~~ [React Hook useImperativeHandle has a missing dependency: 'props.hello'. Either include it or remove the dependency array.]
+              });
+
+
+
+              function MyComponent(props) {
+                useEffect(() => {
+                  if (props.onChange) {
+                    props.onChange();
+                  }
+                }, []);
+                   ~~ [React Hook useEffect has a missing dependency: 'props'. Either include it or remove the dependency array. However, 'props' will change when *any* prop changes, so the preferred fix is to destructure the 'props' object outside of the useEffect call and refer to those specific props inside useEffect.]
+              }
+
+
+
+              function MyComponent(props) {
+                useEffect(() => {
+                 function play() {
+                    props.onPlay();
+                  }
+                  function pause() {
+                    props.onPause();
+                  }
+                }, []);
+                   ~~ [React Hook useEffect has a missing dependency: 'props'. Either include it or remove the dependency array. However, 'props' will change when *any* prop changes, so the preferred fix is to destructure the 'props' object outside of the useEffect call and refer to those specific props inside useEffect.]
+              }
+
+
+
+              function MyComponent(props) {
+                useEffect(() => {
+                  if (props.foo.onChange) {
+                    props.foo.onChange();
+                  }
+                }, []);
+                   ~~ [React Hook useEffect has a missing dependency: 'props.foo'. Either include it or remove the dependency array.]
+              }
+
+
+
+              function MyComponent(props) {
+                useEffect(() => {
+                  props.onChange();
+                  if (props.foo.onChange) {
+                    props.foo.onChange();
+                  }
+                }, []);
+                   ~~ [React Hook useEffect has a missing dependency: 'props'. Either include it or remove the dependency array. However, 'props' will change when *any* prop changes, so the preferred fix is to destructure the 'props' object outside of the useEffect call and refer to those specific props inside useEffect.]
+              }
+
+
+
+              function MyComponent(props) {
+                const [skillsCount] = useState();
+                useEffect(() => {
+                  if (skillsCount === 0 && !props.isEditMode) {
+                    props.toggleEditMode();
+                  }
+                }, [skillsCount, props.isEditMode, props.toggleEditMode]);
+                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ [React Hook useEffect has a missing dependency: 'props'. Either include it or remove the dependency array. However, 'props' will change when *any* prop changes, so the preferred fix is to destructure the 'props' object outside of the useEffect call and refer to those specific props inside useEffect.]
+              }
+
+
+
+              function MyComponent(props) {
+                const [skillsCount] = useState();
+                useEffect(() => {
+                  if (skillsCount === 0 && !props.isEditMode) {
+                    props.toggleEditMode();
+                  }
+                }, []);
+                   ~~ [React Hook useEffect has missing dependencies: 'props' and 'skillsCount'. Either include them or remove the dependency array. However, 'props' will change when *any* prop changes, so the preferred fix is to destructure the 'props' object outside of the useEffect call and refer to those specific props inside useEffect.]
+              }
+
+
+
+              function MyComponent(props) {
+                useEffect(() => {
+                  externalCall(props);
+                  props.onChange();
+                }, []);
+                   ~~ [React Hook useEffect has a missing dependency: 'props'. Either include it or remove the dependency array.]
+              }
+
+
+
+              function MyComponent(props) {
+                useEffect(() => {
+                  props.onChange();
+                  externalCall(props);
+                }, []);
+                   ~~ [React Hook useEffect has a missing dependency: 'props'. Either include it or remove the dependency array.]
+              }
+
+
+
+              function MyComponent() {
+                const myRef = useRef();
+                useEffect(() => {
+                  const handleMove = () => {};
+                  myRef.current.addEventListener('mousemove', handleMove);
+                  return () => myRef.current.removeEventListener('mousemove', handleMove);
+                                     ~~~~~~~ [The ref value 'myRef.current' will likely have changed by the time this effect cleanup function runs. If this ref points to a node rendered by React, copy 'myRef.current' to a variable inside the effect, and use that variable in the cleanup function.]
+                }, []);
+                return <div ref={myRef} />;
+              }
+
+
+
+              function MyComponent() {
+                const myRef = useRef();
+                useEffect(() => {
+                  const handleMove = () => {};
+                  myRef.current.addEventListener('mousemove', handleMove);
+                  return () => myRef.current.removeEventListener('mousemove', handleMove);
+                                     ~~~~~~~ [The ref value 'myRef.current' will likely have changed by the time this effect cleanup function runs. If this ref points to a node rendered by React, copy 'myRef.current' to a variable inside the effect, and use that variable in the cleanup function.]
+                });
+                return <div ref={myRef} />;
+              }
+
+
+
+              function useMyThing(myRef) {
+                useEffect(() => {
+                  const handleMove = () => {};
+                  myRef.current.addEventListener('mousemove', handleMove);
+                  return () => myRef.current.removeEventListener('mousemove', handleMove);
+                                     ~~~~~~~ [The ref value 'myRef.current' will likely have changed by the time this effect cleanup function runs. If this ref points to a node rendered by React, copy 'myRef.current' to a variable inside the effect, and use that variable in the cleanup function.]
+                }, [myRef]);
+              }
+
+
+
+              function useMyThing(myRef) {
+                useEffect(() => {
+                  const handleMouse = () => {};
+                  myRef.current.addEventListener('mousemove', handleMouse);
+                  myRef.current.addEventListener('mousein', handleMouse);
+                  return function() {
+                    setTimeout(() => {
+                      myRef.current.removeEventListener('mousemove', handleMouse);
+                      myRef.current.removeEventListener('mousein', handleMouse);
+                            ~~~~~~~ [The ref value 'myRef.current' will likely have changed by the time this effect cleanup function runs. If this ref points to a node rendered by React, copy 'myRef.current' to a variable inside the effect, and use that variable in the cleanup function.]
+                    });
+                  }
+                }, [myRef]);
+              }
+
+
+
+              function useMyThing(myRef, active) {
+                useEffect(() => {
+                  const handleMove = () => {};
+                  if (active) {
+                    myRef.current.addEventListener('mousemove', handleMove);
+                    return function() {
+                      setTimeout(() => {
+                        myRef.current.removeEventListener('mousemove', handleMove);
+                              ~~~~~~~ [The ref value 'myRef.current' will likely have changed by the time this effect cleanup function runs. If this ref points to a node rendered by React, copy 'myRef.current' to a variable inside the effect, and use that variable in the cleanup function.]
+                      });
+                    }
+                  }
+                }, [myRef, active]);
+              }
+
+
+
+            function MyComponent() {
+              const local1 = 42;
+              const local2 = '42';
+              const local3 = null;
+              const local4 = {};
+              useEffect(() => {
+                console.log(local1);
+                console.log(local2);
+                console.log(local3);
+                console.log(local4);
+              }, [local1, local3]);
+                 ~~~~~~~~~~~~~~~~ [React Hook useEffect has a missing dependency: 'local4'. Either include it or remove the dependency array.]
+            }
+
+
+
+              function MyComponent() {
+                useEffect(() => {
+                  window.scrollTo(0, 0);
+                }, [window]);
+                   ~~~~~~~~ [React Hook useEffect has an unnecessary dependency: 'window'. Either exclude it or remove the dependency array. Outer scope values like 'window' aren't valid dependencies because mutating them doesn't re-render the component.]
+              }
+
+
+
+              import MutableStore from 'store';
+
+              function MyComponent() {
+                useEffect(() => {
+                  console.log(MutableStore.hello);
+                }, [MutableStore.hello]);
+                   ~~~~~~~~~~~~~~~~~~~~ [React Hook useEffect has an unnecessary dependency: 'MutableStore.hello'. Either exclude it or remove the dependency array. Outer scope values like 'MutableStore.hello' aren't valid dependencies because mutating them doesn't re-render the component.]
+              }
+
+
+
+              import MutableStore from 'store';
+              let z = {};
+
+              function MyComponent(props) {
+                let x = props.foo;
+                {
+                  let y = props.bar;
+                  useEffect(() => {
+                    console.log(MutableStore.hello.world, props.foo, x, y, z, global.stuff);
+                  }, [MutableStore.hello.world, props.foo, x, y, z, global.stuff]);
+                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ [React Hook useEffect has unnecessary dependencies: 'MutableStore.hello.world', 'global.stuff', and 'z'. Either exclude them or remove the dependency array. Outer scope values like 'MutableStore.hello.world' aren't valid dependencies because mutating them doesn't re-render the component.]
+                }
+              }
+
+
+
+              import MutableStore from 'store';
+              let z = {};
+
+              function MyComponent(props) {
+                let x = props.foo;
+                {
+                  let y = props.bar;
+                  useEffect(() => {
+                    // nothing
+                  }, [MutableStore.hello.world, props.foo, x, y, z, global.stuff]);
+                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ [React Hook useEffect has unnecessary dependencies: 'MutableStore.hello.world', 'global.stuff', and 'z'. Either exclude them or remove the dependency array. Outer scope values like 'MutableStore.hello.world' aren't valid dependencies because mutating them doesn't re-render the component.]
+                }
+              }
+
+
+
+              import MutableStore from 'store';
+              let z = {};
+
+              function MyComponent(props) {
+                let x = props.foo;
+                {
+                  let y = props.bar;
+                  const fn = useCallback(() => {
+                    // nothing
+                  }, [MutableStore.hello.world, props.foo, x, y, z, global.stuff]);
+                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ [React Hook useCallback has unnecessary dependencies: 'MutableStore.hello.world', 'global.stuff', 'props.foo', 'x', 'y', and 'z'. Either exclude them or remove the dependency array. Outer scope values like 'MutableStore.hello.world' aren't valid dependencies because mutating them doesn't re-render the component.]
+                }
+              }
+
+
+
+              function Counter() {
+                let [count, setCount] = useState(0);
+
+                useEffect(() => {
+                  let id = setInterval(() => {
+                    setCount(count + 1);
+                  }, 1000);
+                  return () => clearInterval(id);
+                }, []);
+                   ~~ [React Hook useEffect has a missing dependency: 'count'. Either include it or remove the dependency array. You can also do a functional update 'setCount(c => ...)' if you only need 'count' in the 'setCount' call.]
+
+                return <h1>{count}</h1>;
+              }
+
+
+
+              function Counter() {
+                let [count, setCount] = useState(0);
+                let [increment, setIncrement] = useState(0);
+
+                useEffect(() => {
+                  let id = setInterval(() => {
+                    setCount(count + increment);
+                  }, 1000);
+                  return () => clearInterval(id);
+                }, []);
+                   ~~ [React Hook useEffect has missing dependencies: 'count' and 'increment'. Either include them or remove the dependency array. You can also do a functional update 'setCount(c => ...)' if you only need 'count' in the 'setCount' call.]
+
+                return <h1>{count}</h1>;
+              }
+
+
+
+              function Counter() {
+                let [count, setCount] = useState(0);
+                let [increment, setIncrement] = useState(0);
+
+                useEffect(() => {
+                  let id = setInterval(() => {
+                    setCount(count => count + increment);
+                  }, 1000);
+                  return () => clearInterval(id);
+                }, []);
+                   ~~ [React Hook useEffect has a missing dependency: 'increment'. Either include it or remove the dependency array. You can also replace multiple useState variables with useReducer if 'setCount' needs the current value of 'increment'.]
+
+                return <h1>{count}</h1>;
+              }
+
+
+
+              function Counter() {
+                let [count, setCount] = useState(0);
+                let increment = useCustomHook();
+
+                useEffect(() => {
+                  let id = setInterval(() => {
+                    setCount(count => count + increment);
+                  }, 1000);
+                  return () => clearInterval(id);
+                }, []);
+                   ~~ [React Hook useEffect has a missing dependency: 'increment'. Either include it or remove the dependency array.]
+
+                return <h1>{count}</h1>;
+              }
+
+
+
+              function Counter({ step }) {
+                let [count, setCount] = useState(0);
+
+                function increment(x) {
+                  return x + step;
+                }
+
+                useEffect(() => {
+                  let id = setInterval(() => {
+                    setCount(count => increment(count));
+                  }, 1000);
+                  return () => clearInterval(id);
+                }, []);
+                   ~~ [React Hook useEffect has a missing dependency: 'increment'. Either include it or remove the dependency array.]
+
+                return <h1>{count}</h1>;
+              }
+
+
+
+              function Counter({ increment }) {
+                let [count, setCount] = useState(0);
+
+                useEffect(() => {
+                  let id = setInterval(() => {
+                    setCount(count => count + increment);
+                  }, 1000);
+                  return () => clearInterval(id);
+                }, []);
+                   ~~ [React Hook useEffect has a missing dependency: 'increment'. Either include it or remove the dependency array. If 'setCount' needs the current value of 'increment', you can also switch to useReducer instead of useState and read 'increment' in the reducer.]
+
+                return <h1>{count}</h1>;
+              }
+
+
+
+              function Counter() {
+                const [count, setCount] = useState(0);
+
+                function tick() {
+                  setCount(count + 1);
+                }
+
+                useEffect(() => {
+                  let id = setInterval(() => {
+                    tick();
+                  }, 1000);
+                  return () => clearInterval(id);
+                }, []);
+                   ~~ [React Hook useEffect has a missing dependency: 'tick'. Either include it or remove the dependency array.]
+
+                return <h1>{count}</h1>;
+              }
+
+
+
+              function Podcasts() {
+                useEffect(() => {
+                  alert(podcasts);
+                }, []);
+                   ~~ [React Hook useEffect has a missing dependency: 'podcasts'. Either include it or remove the dependency array.]
+                let [podcasts, setPodcasts] = useState(null);
+              }
+
+
+
+              function Podcasts({ fetchPodcasts, id }) {
+                let [podcasts, setPodcasts] = useState(null);
+                useEffect(() => {
+                  fetchPodcasts(id).then(setPodcasts);
+                }, [id]);
+                   ~~~~ [React Hook useEffect has a missing dependency: 'fetchPodcasts'. Either include it or remove the dependency array. If 'fetchPodcasts' changes too often, find the parent component that defines it and wrap that definition in useCallback.]
+              }
+
+
+
+              function Podcasts({ api: { fetchPodcasts }, id }) {
+                let [podcasts, setPodcasts] = useState(null);
+                useEffect(() => {
+                  fetchPodcasts(id).then(setPodcasts);
+                }, [id]);
+                   ~~~~ [React Hook useEffect has a missing dependency: 'fetchPodcasts'. Either include it or remove the dependency array. If 'fetchPodcasts' changes too often, find the parent component that defines it and wrap that definition in useCallback.]
+              }
+
+
+
+              function Podcasts({ fetchPodcasts, fetchPodcasts2, id }) {
+                let [podcasts, setPodcasts] = useState(null);
+                useEffect(() => {
+                  setTimeout(() => {
+                    console.log(id);
+                    fetchPodcasts(id).then(setPodcasts);
+                    fetchPodcasts2(id).then(setPodcasts);
+                  });
+                }, [id]);
+                   ~~~~ [React Hook useEffect has missing dependencies: 'fetchPodcasts' and 'fetchPodcasts2'. Either include them or remove the dependency array. If 'fetchPodcasts' changes too often, find the parent component that defines it and wrap that definition in useCallback.]
+              }
+
+
+
+              function Podcasts({ fetchPodcasts, id }) {
+                let [podcasts, setPodcasts] = useState(null);
+                useEffect(() => {
+                  console.log(fetchPodcasts);
+                  fetchPodcasts(id).then(setPodcasts);
+                }, [id]);
+                   ~~~~ [React Hook useEffect has a missing dependency: 'fetchPodcasts'. Either include it or remove the dependency array. If 'fetchPodcasts' changes too often, find the parent component that defines it and wrap that definition in useCallback.]
+              }
+
+
+
+              function Thing() {
+                useEffect(() => {
+                  const fetchData = async () => {};
+                  fetchData();
+                }, [fetchData]);
+                   ~~~~~~~~~~~ [React Hook useEffect has an unnecessary dependency: 'fetchData'. Either exclude it or remove the dependency array.]
+              }
+
+
+
+              function Hello() {
+                const [state, setState] = useState(0);
+                useEffect(() => {
+                ~~~~~~~~~ [React Hook useEffect contains a call to 'setState'. Without a list of dependencies, this can lead to an infinite chain of updates. To fix this, pass [] as a second argument to the useEffect Hook.]
+                  setState({});
+                });
+              }
+
+
+
+              function Hello() {
+                const [data, setData] = useState(0);
+                useEffect(() => {
+                ~~~~~~~~~ [React Hook useEffect contains a call to 'setData'. Without a list of dependencies, this can lead to an infinite chain of updates. To fix this, pass [] as a second argument to the useEffect Hook.]
+                  fetchData.then(setData);
+                });
+              }
+
+
+
+              function Hello({ country }) {
+                const [data, setData] = useState(0);
+                useEffect(() => {
+                ~~~~~~~~~ [React Hook useEffect contains a call to 'setData'. Without a list of dependencies, this can lead to an infinite chain of updates. To fix this, pass [country] as a second argument to the useEffect Hook.]
+                  fetchData(country).then(setData);
+                });
+              }
+
+
+
+              function Hello({ prop1, prop2 }) {
+                const [state, setState] = useState(0);
+                useEffect(() => {
+                ~~~~~~~~~ [React Hook useEffect contains a call to 'setState'. Without a list of dependencies, this can lead to an infinite chain of updates. To fix this, pass [prop1, prop2] as a second argument to the useEffect Hook.]
+                  if (prop1) {
+                    setState(prop2);
+                  }
+                });
+              }
+
+
+
+              function Thing() {
+                useEffect(async () => {}, []);
+                          ~~~~~~~~~~~~~~ [Effect callbacks are synchronous to prevent race conditions. Learn more about data fetching with Hooks: https://fb.me/react-hooks-data-fetching]
+              }
+
+
+
+              function Thing() {
+                useEffect(async () => {});
+                          ~~~~~~~~~~~~~~ [Effect callbacks are synchronous to prevent race conditions. Learn more about data fetching with Hooks: https://fb.me/react-hooks-data-fetching]
+              }
+
+
+
+              function Example() {
+                const foo = useCallback(() => {
+                  foo();
+                }, [foo]);
+                   ~~~~~ [React Hook useCallback has an unnecessary dependency: 'foo'. Either exclude it or remove the dependency array.]
+              }
+
+
+
+              function Example({ prop }) {
+                const foo = useCallback(() => {
+                  prop.hello(foo);
+                }, [foo]);
+                   ~~~~~ [React Hook useCallback has a missing dependency: 'prop'. Either include it or remove the dependency array.]
+                const bar = useCallback(() => {
+                  foo();
+                }, [foo]);
+              }

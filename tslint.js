@@ -8,6 +8,7 @@ module.exports = {
 		// This is a bit hacky and we should probably extend from tslint-microsoft-contrib instead,
 		// and then disable the rules we don't want.
 		path.dirname(require.resolve('tslint-microsoft-contrib')),
+		path.join(path.dirname(require.resolve('tslint-react-hooks')), 'dist'),
 	],
 	jsRules: {
 		quotemark: [true, 'single', 'jsx-double', 'avoid-escape'],
@@ -103,6 +104,8 @@ module.exports = {
 		'react-this-binding-issue': true,
 		'react-tsx-curly-spacing': [true, 'never'],
 		'react-unused-props-and-state': true,
+		'react-hooks-nesting': 'error',
+		'react-hooks-exhaustive-deps': true,
 		semicolon: [true, 'always', 'ignore-bound-class-methods'],
 	},
 };

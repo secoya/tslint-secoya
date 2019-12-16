@@ -17,7 +17,7 @@
 		"target": "es5",
 		"experimentalDecorators": true,
 		"baseUrl": ".",
-		"lib": ["es5", "es2015"]
+		"lib": ["es2017"]
 	},
 	"include": ["src/**/*.ts"]
 }

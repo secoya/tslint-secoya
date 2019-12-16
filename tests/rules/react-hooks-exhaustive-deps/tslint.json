@@ -1,0 +1,11 @@
+{
+	"rulesDirectory": ["../../../lib"],
+	"rules": {
+		"react-hooks-exhaustive-deps": [
+			true,
+			{
+				"additionalHooks": "useCustomEffect"
+			}
+		]
+	}
+}

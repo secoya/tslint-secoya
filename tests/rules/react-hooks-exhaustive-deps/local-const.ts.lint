@@ -1,0 +1,32 @@
+function MyComponent() {
+	const local1 = {};
+	{
+	const local2 = {};
+	useCallback(() => {
+		console.log(local1);
+		console.log(local2);
+	}, [local1, local2]);
+	}
+}
+
+function MyComponent() {
+	const local1 = {};
+	function MyNestedComponent() {
+	const local2 = {};
+	useCallback(() => {
+		console.log(local1);
+		console.log(local2);
+	}, [local2]);
+	}
+}
+
+function MyComponent() {
+	const local1 = {};
+	{
+	const local2 = {};
+	useEffect(() => {
+		console.log(local1);
+		console.log(local2);
+	});
+	}
+}

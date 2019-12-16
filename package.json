@@ -31,7 +31,9 @@
 		"tslint": ">=5.0.0"
 	},
 	"dependencies": {
+		"@secoya/typescript-scope-analysis": "1.0.0",
 		"tslint-microsoft-contrib": "5.2.1",
-		"tslint-react": "3.6.0"
+		"tslint-react": "3.6.0",
+		"tslint-react-hooks": "2.2.1"
 	}
 }
