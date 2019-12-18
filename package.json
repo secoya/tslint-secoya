@@ -1,6 +1,6 @@
 {
 	"name": "tslint-secoya",
-	"version": "2.1.1",
+	"version": "2.1.2",
 	"description": "Secoya's TSLint rules",
 	"main": "tslint.json",
 	"scripts": {
