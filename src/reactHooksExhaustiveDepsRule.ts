@@ -1066,20 +1066,11 @@ function fastFindReferenceWithParent(start: ts.Node, target: ts.Node): ts.Node |
 			continue;
 		}
 
-		for (const [key, value] of Object.entries(item)) {
-			if (key === 'parent') {
-				continue;
-			}
+		ts.forEachChild(item, value => {
 			if (isNodeLike(value)) {
 				queue.push(value);
-			} else if (Array.isArray(value)) {
-				value.forEach(val => {
-					if (isNodeLike(val)) {
-						queue.push(val);
-					}
-				});
 			}
-		}
+		});
 	}
 
 	return null;
