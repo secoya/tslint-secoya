@@ -1,0 +1,18 @@
+function MyComponent() {
+	const [data, setData] = useState([] as PersonRow[]);
+	const quantity = 20;
+	useEffect(() => {
+		queryGql(gql`
+			query {
+				tableData(qty: ${quantity}) {
+					firstName
+					lastName
+					age
+					visits
+					progress
+					status
+				}
+			}
+		`).then(result => setData(result.data.tableData as typeof data));
+	}, [quantity]);
+}
