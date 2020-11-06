@@ -56,6 +56,7 @@ export class Rule extends Lint.Rules.TypedRule {
 }
 
 interface Scope {
+	awaitUsages: number;
 	functionDecl?: ts.FunctionLikeDeclaration;
 	promises: Map<string, { blockLevel: number; declNode: ts.Identifier }>;
 	scopeBlockLevel: number;
@@ -74,10 +75,9 @@ interface TryStatementInfo {
 }
 
 export class ProperPromiseUse extends Lint.RuleWalker {
-	private awaitUsages: number = 0;
 	private blockLevel: number = 0;
 	private readonly conditions: { errorInConditionals: boolean; node: ts.Node; scopeBlockLevel: number }[] = [];
-	private readonly scopes: Scope[] = [{ scopeBlockLevel: 0, promises: new Map(), tryCatchBlocks: [] }];
+	private readonly scopes: Scope[] = [{  awaitUsages: 0, scopeBlockLevel: 0, promises: new Map(), tryCatchBlocks: [] }];
 	private readonly typeChecker: ts.TypeChecker;
 
 	public constructor(sourceFile: ts.SourceFile, options: Lint.IOptions, program: ts.Program) {
@@ -127,7 +127,7 @@ export class ProperPromiseUse extends Lint.RuleWalker {
 	}
 
 	private enterAwaitLikeExpression(): void {
-		this.awaitUsages++;
+		this.scopes[this.scopes.length - 1].awaitUsages++;
 	}
 
 	private enterBlock(): void {
@@ -141,6 +141,7 @@ export class ProperPromiseUse extends Lint.RuleWalker {
 	private enterScope(functionDecl?: ts.FunctionLikeDeclaration): void {
 		this.blockLevel++;
 		this.scopes.push({
+			awaitUsages: 0,
 			functionDecl: functionDecl,
 			promises: new Map(),
 			scopeBlockLevel: this.blockLevel,
@@ -149,7 +150,7 @@ export class ProperPromiseUse extends Lint.RuleWalker {
 	}
 
 	private exitAwaitLikeExpression(): void {
-		this.awaitUsages--;
+		this.scopes[this.scopes.length - 1].awaitUsages--;
 	}
 
 	private exitBlock(): void {
@@ -186,19 +187,19 @@ export class ProperPromiseUse extends Lint.RuleWalker {
 	}
 
 	private failCurrentScope(problemNode: ts.Node, failureString: (node: ts.Identifier) => string): void {
-		const scope = this.currentScopePromises();
-		scope.forEach(({ declNode }) => {
+		const promises = this.currentScopePromises();
+		promises.forEach(({ declNode }) => {
 			this.addFailureAtNode(problemNode, failureString(declNode));
 		});
-		scope.clear();
+		promises.clear();
 	}
 
 	private failCurrentScopeUnhandled(): void {
-		const scope = this.currentScopePromises();
-		scope.forEach(({ declNode }) => {
+		const promises = this.currentScopePromises();
+		promises.forEach(({ declNode }) => {
 			this.addFailureAtNode(declNode, Rule.FAILURE_STRING_MISSING_AWAIT(declNode));
 		});
-		scope.clear();
+		promises.clear();
 	}
 
 	private getScopeAndPromiseUsage(
@@ -217,7 +218,7 @@ export class ProperPromiseUse extends Lint.RuleWalker {
 	}
 
 	private isAwaiting(): boolean {
-		return this.awaitUsages > 0;
+		return this.scopes[this.scopes.length - 1].awaitUsages > 0;
 	}
 
 	private isConditioned(promiseVar: string): boolean {
@@ -308,7 +309,7 @@ export class ProperPromiseUse extends Lint.RuleWalker {
 		if (isPromise) {
 			this.visitNode(call.expression);
 			// We treat treat functions arguments to functions generating promises
-			// as thought we're awaiting on them,
+			// as though we're awaiting on them,
 			// except that multiples are considered handled in parrallel
 			this.enterAwaitLikeExpression();
 			call.arguments.forEach(node => this.visitNode(node));

@@ -403,3 +403,81 @@ async function orbitFn2(projectNode: { startsAt: string | null; endsAt: string |
 		projectNode.endsAt != null
 	);
 }
+
+
+
+// https://github.com/secoya/orbit-core/blob/95ccb0ded28c9e50886d1569a1162844fa6dd69a/graphql/src/loaders/ProfileMasterAdditionalPhoneNumber.ts#L36
+// there was no error reported in this file on the obvious error
+// Error that was present seems to be centered around functions being nested in the second level of function arguments
+import BaseLoader from 'base/BaseLoader';
+import * as SQL from 'base/SQL';
+import { promiseAllReturnError } from 'base/util';
+import {
+	ProfileMasterAdditionalPhoneNumber,
+	ProfileMasterAdditionalPhoneNumberID,
+} from 'model!models/ProfileMasterAdditionalPhoneNumber';
+
+async function loadIfViewerCanFullRead(id: any): Promise<any>;
+
+export class ProfileMasterAdditionalPhoneNumberLoader extends BaseLoader<
+	ProfileMasterAdditionalPhoneNumberID,
+	Maybe<ProfileMasterAdditionalPhoneNumber>
+> {
+	protected async loadBatch(
+		keys: ProfileMasterAdditionalPhoneNumberID[],
+	): Promise<(Maybe<ProfileMasterAdditionalPhoneNumber> | Error)[]> {
+		if (this.context.userId == null && !this.context.isPrivateSystemUser) {
+			return keys.map(() => null);
+		}
+		const query = SQL.Query`
+			SELECT
+				${ProfileMasterAdditionalPhoneNumber.columnSelect('pmap')}
+			FROM
+				profile.masters_additional_phonenumbers pmap
+			WHERE
+				pmap.id = ANY(${SQL.param('ids', keys)})
+		`;
+
+		const res = await query.execute(this.context.PostgresClient);
+
+		return promiseAllReturnError(
+			keys.map(async k => {
+				const row = res.rows.find(r => r.id === k);
+				if (row == null) {
+					return null;
+				}
+				const profileMaster = loadIfViewerCanFullRead(row.profileMasterId);
+				      ~~~~~~~~~~~~~ [Promise "profileMaster" must be handled.]
+				if (profileMaster == null) {
+					return null;
+				}
+				return new ProfileMasterAdditionalPhoneNumber(row);
+			}),
+		);
+	}
+}
+
+// Ideally this wouldn't report an error, but as of right now we don't have the
+// control flow analysis needed to not report this.
+// If the following is deleted from the code below
+// then it will not report an error here:
+//
+// if (!isPromise(maybePromise)) {
+//     return maybePromise;
+// }
+//
+export function promiseAllReturnError<T>(promises: (Promise<T> | T)[]): Promise<(T | Error)[]> {
+	return Promise.all(
+		promises.map(maybePromise => {
+		             ~~~~~~~~~~~~ [Promise "maybePromise" must be handled.]
+			if (!isPromise(maybePromise)) {
+				return maybePromise;
+			}
+			return promiseReturnError(maybePromise);
+		}),
+	);
+}
+
+export function promiseReturnError<T>(promise: Promise<T>): Promise<T | Error> {
+	return promise.catch((e: Error) => e);
+}
