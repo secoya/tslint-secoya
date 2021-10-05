@@ -2,5 +2,5 @@ function MyComponent() {
 	const [data, setData] = useState([]);
 	useCallback((e) => {
 		console.log(data);
-	}, [data] as unknown[]);
+	}, [data as unknown] as unknown[]);
 }

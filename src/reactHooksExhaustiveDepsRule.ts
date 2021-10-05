@@ -560,7 +560,8 @@ export class ReactHooksExhaustiveDeps extends Lint.RuleWalker {
 					'dependencies.',
 			);
 		} else {
-			declaredDependenciesNode.elements.forEach((declaredDependencyNode) => {
+			declaredDependenciesNode.elements.forEach((declaredDependencyNodeRaw) => {
+				const declaredDependencyNode = unwrapNonSemanticExpressions(declaredDependencyNodeRaw);
 				// Skip elided elements.
 				if (ts.isOmittedExpression(declaredDependencyNode)) {
 					return;
@@ -1428,6 +1429,7 @@ function getDeclaringExpr(declaringNode: DeclaringNode): ts.Node {
 	return declaringNode;
 }
 
+function unwrapNonSemanticExpressions(exp: ts.Expression): ts.Expression;
 function unwrapNonSemanticExpressions(exp?: ts.Expression): ts.Expression | undefined {
 	if (exp == null) {
 		return exp;
