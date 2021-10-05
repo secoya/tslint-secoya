@@ -117,7 +117,7 @@ export class ReactHooksExhaustiveDeps extends Lint.RuleWalker {
 		// second argument then the reactive callback will re-run on every render.
 		// So no need to check for dependency inclusion.
 		const depsIndex = callbackIndex + 1;
-		const declaredDependenciesNode = funcExpr.parent.arguments[depsIndex];
+		const declaredDependenciesNode = unwrapNonSemanticExpressions(funcExpr.parent.arguments[depsIndex]);
 
 		if (!declaredDependenciesNode && !isEffect) {
 			// These are only used for optimization.
@@ -300,7 +300,7 @@ export class ReactHooksExhaustiveDeps extends Lint.RuleWalker {
 			const fnParentScopes = getParentScopes(fnScope);
 			for (const reference of fnScope
 				.getAllReferencesRecursively()
-				.filter(x => x.referenceTo != null && fnParentScopes.has(x.referenceTo!.scope))) {
+				.filter((x) => x.referenceTo != null && fnParentScopes.has(x.referenceTo!.scope))) {
 				if (
 					// Filter ensures referenceTo is not null
 					pureScopes.has(reference.referenceTo!.scope) &&
@@ -475,7 +475,7 @@ export class ReactHooksExhaustiveDeps extends Lint.RuleWalker {
 			if (isStatic) {
 				optionalDependencies.add(key);
 			}
-			references.forEach(reference => {
+			references.forEach((reference) => {
 				if (reference.writeExpr) {
 					reportStaleAssignment(reference.writeExpr, key);
 				}
@@ -495,7 +495,7 @@ export class ReactHooksExhaustiveDeps extends Lint.RuleWalker {
 				if (setStateInsideEffectWithoutDeps) {
 					return;
 				}
-				references.forEach(reference => {
+				references.forEach((reference) => {
 					if (setStateInsideEffectWithoutDeps) {
 						return;
 					}
@@ -560,7 +560,7 @@ export class ReactHooksExhaustiveDeps extends Lint.RuleWalker {
 					'dependencies.',
 			);
 		} else {
-			declaredDependenciesNode.elements.forEach(declaredDependencyNode => {
+			declaredDependenciesNode.elements.forEach((declaredDependencyNode) => {
 				// Skip elided elements.
 				if (ts.isOmittedExpression(declaredDependencyNode)) {
 					return;
@@ -629,7 +629,7 @@ export class ReactHooksExhaustiveDeps extends Lint.RuleWalker {
 				const isDeclaredInComponent = !nonNullableComponentScope
 					.getAllReferencesRecursively()
 					.some(
-						ref =>
+						(ref) =>
 							ref.identifier === maybeID &&
 							(ref.referenceTo == null || parentScopes.has(ref.referenceTo.scope)),
 					);
@@ -717,7 +717,7 @@ export class ReactHooksExhaustiveDeps extends Lint.RuleWalker {
 			if (declaredDependencies.length === 0) {
 				return true;
 			}
-			const declaredDepKeys = declaredDependencies.map(dep => dep.key);
+			const declaredDepKeys = declaredDependencies.map((dep) => dep.key);
 			const sortedDeclaredDepKeys = declaredDepKeys.slice().sort();
 			return declaredDepKeys.join(',') === sortedDeclaredDepKeys.join(',');
 		}
@@ -743,7 +743,7 @@ export class ReactHooksExhaustiveDeps extends Lint.RuleWalker {
 				joinEnglish(
 					Array.from(deps)
 						.sort()
-						.map(name => "'" + name + "'"),
+						.map((name) => "'" + name + "'"),
 				) +
 				`. Either ${fixVerb} ${deps.size > 1 ? 'them' : 'it'} or remove the dependency array.`
 			);
@@ -752,7 +752,7 @@ export class ReactHooksExhaustiveDeps extends Lint.RuleWalker {
 		let extraWarning = '';
 		if (unnecessaryDependencies.size > 0) {
 			let badRef: string | null = null;
-			Array.from(unnecessaryDependencies.keys()).forEach(key => {
+			Array.from(unnecessaryDependencies.keys()).forEach((key) => {
 				if (badRef !== null) {
 					return;
 				}
@@ -819,7 +819,7 @@ export class ReactHooksExhaustiveDeps extends Lint.RuleWalker {
 			// See if the user is trying to avoid specifying a callable prop.
 			// This usually means they're unaware of useCallback.
 			let missingCallbackDep: string | null = null;
-			missingDependencies.forEach(missingDep => {
+			missingDependencies.forEach((missingDep) => {
 				if (missingCallbackDep) {
 					return;
 				}
@@ -1066,7 +1066,7 @@ function fastFindReferenceWithParent(start: ts.Node, target: ts.Node): ts.Node |
 			continue;
 		}
 
-		ts.forEachChild(item, value => {
+		ts.forEachChild(item, (value) => {
 			if (isNodeLike(value)) {
 				queue.push(value);
 			}
@@ -1090,7 +1090,7 @@ function getNodeWithoutReactNamespace(
 }
 
 function isAsync(funcExpr: ts.FunctionExpression | ts.ArrowFunction): boolean {
-	return funcExpr.modifiers == null ? false : funcExpr.modifiers.some(x => x.kind === ts.SyntaxKind.AsyncKeyword);
+	return funcExpr.modifiers == null ? false : funcExpr.modifiers.some((x) => x.kind === ts.SyntaxKind.AsyncKeyword);
 }
 
 /**
@@ -1217,7 +1217,7 @@ function collectRecommendations({
 	dependencies.forEach((_, key) => {
 		const node = getOrCreateNodeByPath(depTree, key);
 		node.isRequired = true;
-		markAllParentsByPath(depTree, key, parent => {
+		markAllParentsByPath(depTree, key, (parent) => {
 			parent.hasRequiredNodesBelow = true;
 		});
 	});
@@ -1228,7 +1228,7 @@ function collectRecommendations({
 		const node = getOrCreateNodeByPath(depTree, key);
 		node.isSatisfiedRecursively = true;
 	});
-	optionalDependencies.forEach(key => {
+	optionalDependencies.forEach((key) => {
 		const node = getOrCreateNodeByPath(depTree, key);
 		node.isSatisfiedRecursively = true;
 	});
@@ -1263,7 +1263,7 @@ function collectRecommendations({
 	// Now we can learn which dependencies are missing or necessary.
 	const missingDependencies = new Set<string>();
 	const satisfyingDependencies = new Set<string>();
-	scanTreeRecursively(depTree, missingDependencies, satisfyingDependencies, key => key);
+	scanTreeRecursively(depTree, missingDependencies, satisfyingDependencies, (key) => key);
 	function scanTreeRecursively(
 		node: DepTree,
 		missingPaths: Set<string>,
@@ -1289,7 +1289,7 @@ function collectRecommendations({
 				// No need to search further.
 				return;
 			}
-			scanTreeRecursively(child, missingPaths, satisfyingPaths, childKey => path + '.' + childKey);
+			scanTreeRecursively(child, missingPaths, satisfyingPaths, (childKey) => path + '.' + childKey);
 		});
 	}
 
@@ -1324,7 +1324,7 @@ function collectRecommendations({
 	});
 
 	// Then add the missing ones at the end.
-	missingDependencies.forEach(key => {
+	missingDependencies.forEach((key) => {
 		suggestedDependencies.push(key);
 	});
 
@@ -1405,7 +1405,7 @@ function scanForDeclaredBareFunctions({
 		return false;
 	}
 
-	return bareFunctions.map(fnRef => ({
+	return bareFunctions.map((fnRef) => ({
 		fn: fnRef,
 		suggestUseCallback: isUsedOutsideOfHook(fnRef),
 	}));
@@ -1426,4 +1426,17 @@ function getDeclaringExpr(declaringNode: DeclaringNode): ts.Node {
 		return declaringNode.initializer;
 	}
 	return declaringNode;
+}
+
+function unwrapNonSemanticExpressions(exp?: ts.Expression): ts.Expression | undefined {
+	if (exp == null) {
+		return exp;
+	}
+	if (ts.isAsExpression(exp)) {
+		return unwrapNonSemanticExpressions(exp.expression);
+	}
+	if (ts.isParenthesizedExpression(exp)) {
+		return unwrapNonSemanticExpressions(exp.expression);
+	}
+	return exp;
 }
