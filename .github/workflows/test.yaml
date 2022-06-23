@@ -1,0 +1,27 @@
+name: Test
+
+on: [push, workflow_call]
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup .npmrc
+      run: cp tools/_.npmrc .npmrc
+    - name: Cache node_modules/
+      uses: actions/cache@v2
+      with:
+        path: node_modules
+        key: node_modules
+    - name: Install node_modules/
+      uses: docker://node:14.18.2-alpine3.14
+      with:
+        args: yarn --silent install --frozen-lockfile
+      env:
+        NPM_TOKEN: ${{ secrets.NPM_TOKEN_RO }}
+    - name: Run tests
+      uses: docker://node:14.18.2-alpine3.14
+      with:
+        args: node_modules/.bin/tslint --test tests/*/*
