@@ -49,6 +49,11 @@ jobs:
       uses: docker://node:14.18.2-alpine3.14
       with:
         args: node_modules/.bin/tsc -p tsconfig.json
+    - name: Change ownership of the compiled files
+      run: sudo chown -R runner:docker dist
+    - name: Create tslint.json
+      run: |
+        printf -- '{\n\t"extends": ["./tslint.js"]\n}\n' > dist/tslint.json
     - name: Create compilation artifact
       run: tar -cf ../dist.tar *
       working-directory: dist

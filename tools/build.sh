@@ -7,6 +7,7 @@ PATH=$PKGROOT/node_modules/.bin:$PATH
 main() {
   rm -rf "$PKGROOT/dist"
   tsc --project "$PKGROOT/tsconfig.json"
+  printf -- '{\n\t"extends": ["./tslint.js"]\n}\n' > "$PKGROOT/dist/tslint.json"
 }
 
 main "$@"

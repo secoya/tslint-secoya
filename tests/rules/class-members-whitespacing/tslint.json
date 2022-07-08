@@ -1,6 +1,6 @@
 {
 	"rulesDirectory": [
-		"../../../lib"
+		"../../../dist"
 	],
 	"rules": {
 		"class-members-whitespacing": true

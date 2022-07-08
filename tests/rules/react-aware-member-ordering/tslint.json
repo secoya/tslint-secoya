@@ -1,6 +1,6 @@
 {
 	"rulesDirectory": [
-		"../../../lib"
+		"../../../dist"
 	],
 	"rules": {
 		"react-aware-member-ordering": [

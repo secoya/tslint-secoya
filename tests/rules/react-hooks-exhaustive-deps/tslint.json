@@ -1,5 +1,5 @@
 {
-	"rulesDirectory": ["../../../lib"],
+	"rulesDirectory": ["../../../dist"],
 	"rules": {
 		"react-hooks-exhaustive-deps": [
 			true,
