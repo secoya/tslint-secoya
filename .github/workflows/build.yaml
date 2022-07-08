@@ -3,32 +3,8 @@ name: Build
 on: [push, workflow_call]
 
 jobs:
-  lint:
-    name: Lint
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v2
-    - name: Setup .npmrc
-      run: cp tools/_.npmrc .npmrc
-    - name: Cache node_modules/
-      uses: actions/cache@v2
-      with:
-        path: node_modules
-        key: node_modules
-    - name: Install node_modules/
-      uses: docker://node:14.18.2-alpine3.14
-      with:
-        args: yarn --silent install --frozen-lockfile
-      env:
-        NPM_TOKEN: ${{ secrets.NPM_TOKEN_RO }}
-    - name: Lint code
-      uses: docker://node:14.18.2-alpine3.14
-      with:
-        args: node_modules/.bin/tslint -p tsconfig.json
-
   build:
     name: Build
-    needs: [lint]
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
@@ -54,6 +30,14 @@ jobs:
     - name: Create tslint.json
       run: |
         printf -- '{\n\t"extends": ["./tslint.js"]\n}\n' > dist/tslint.json
+    - name: Lint code
+      uses: docker://node:14.18.2-alpine3.14
+      with:
+        args: node_modules/.bin/tslint -p tsconfig.json
+    - name: Run tests
+      uses: docker://node:14.18.2-alpine3.14
+      with:
+        args: node_modules/.bin/tslint --test tests/*/*
     - name: Create compilation artifact
       run: tar -cf ../dist.tar *
       working-directory: dist
