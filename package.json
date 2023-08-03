@@ -30,7 +30,6 @@
 		"tslint": ">=5.0.0"
 	},
 	"dependencies": {
-		"@orbit-online/git-release": "^0.2.0",
 		"@secoya/typescript-scope-analysis": "1.0.4",
 		"tslint-microsoft-contrib": "5.2.1",
 		"tslint-react": "3.6.0",
